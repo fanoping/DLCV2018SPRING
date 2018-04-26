@@ -1,4 +1,4 @@
-# HW3
+# HW3 Semantic Segmentation
 
 ## Table of Content
 
