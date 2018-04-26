@@ -1,2 +1,5 @@
 *.png
 *.jpg
+results_fcn32s/
+results_fcn16s/
+results_fcn8s/

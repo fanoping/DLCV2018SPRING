@@ -1,8 +1,6 @@
 from keras.callbacks import EarlyStopping ,ModelCheckpoint
 from keras.optimizers import Adam
 from keras.utils import to_categorical
-
-
 from data import read_masks, read_sats
 from model import FCN32s, FCN16s, FCN8s
 import argparse
@@ -11,11 +9,11 @@ import os
 train_path = 'hw3-train-validation/train/'
 valid_path = 'hw3-train-validation/validation/'
 
+
 def train(args):
     print("Loading Training Files......")
     sat = read_sats(train_path) / 255.0
     mask = read_masks(train_path)
-
 
     print("Loading Validation Files......")
     sat_valid = read_sats(valid_path) / 255.0
@@ -46,7 +44,7 @@ def train(args):
 
     callbacks = []
     early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='min')
-    check_point = ModelCheckpoint(os.path.join(args.arch,'weights.{epoch:02d}.hdf5'),
+    check_point = ModelCheckpoint(os.path.join(args.arch, 'weights.{epoch:02d}.hdf5'),
                                   verbose=1,
                                   save_best_only=False,
                                   save_weights_only=False,
@@ -59,9 +57,6 @@ def train(args):
     model.fit(sat, mask, batch_size=args.batch_size, epochs=args.epochs,
               verbose=1, callbacks=callbacks, validation_data=(sat_valid, mask_valid))
 
-def eval(args):
-    pass
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Homework 3')
@@ -72,4 +67,3 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--epochs', default=20, type=int,
                         help='number of epochs (default: 20)')
     train(parser.parse_args())
-
