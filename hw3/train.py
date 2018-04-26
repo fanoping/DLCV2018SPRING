@@ -14,13 +14,7 @@ def train(args):
     print("Loading Training Files......")
     sat = read_sats(train_path) / 255.0
     mask = read_masks(train_path)
-
-    print("Loading Validation Files......")
-    sat_valid = read_sats(valid_path) / 255.0
-    mask_valid = read_masks(valid_path)
-
     mask = to_categorical(mask, num_classes=7)
-    mask_valid = to_categorical(mask_valid, num_classes=7)
 
     # optimizer
     adam = Adam(lr=0.0001)
@@ -55,7 +49,7 @@ def train(args):
 
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
     model.fit(sat, mask, batch_size=args.batch_size, epochs=args.epochs,
-              verbose=1, callbacks=callbacks, validation_data=(sat_valid, mask_valid))
+              verbose=1, callbacks=callbacks)
 
 
 if __name__ == '__main__':
