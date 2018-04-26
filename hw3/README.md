@@ -6,7 +6,7 @@
 
 <!-- code_chunk_output -->
 
-* [HW3](#hw3)
+* [HW3](#hw3-semantic-segmentation)
 	* [Table of Content](#table-of-content)
 	* [Requirements](#requirements)
 	* [Usage](#usage)
