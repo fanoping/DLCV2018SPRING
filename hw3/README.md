@@ -53,7 +53,7 @@
 
 ## Results
 
-  	**VGG16-FCN32s**
+  *	**VGG16-FCN32s**
 
     class     | accuracy  |
     --------- | ----------
@@ -66,7 +66,7 @@
 
     mean iou score: 0.672671
 
-    **VGG16-FCN16s**
+  * **VGG16-FCN16s**
 
     class     | accuracy  |
     --------- | ----------
@@ -79,7 +79,7 @@
 
     mean iou score: 0.679271
 
-    **VGG16-FCN8s**
+  * **VGG16-FCN8s**
 
     class     | accuracy  |
     --------- | ----------
