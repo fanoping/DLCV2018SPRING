@@ -59,7 +59,42 @@
 
   * **Results**
 
-    First Header | Second Header
-    ------------ | -------------
-    Content from cell 1 | Content from cell 2
-    Content in the first column | Content in the second column
+  	**VGG16-FCN32s**
+
+    class    | accuracy  |
+    -------- | ----------
+    class 0  | 0.74253
+    class 1  | 0.86813
+    class 2  | 0.30609
+    class 3  | 0.77914
+    class 4  | 0.72905
+    class 5  | 0.61108
+
+    mean iou score: 0.672671
+
+    **VGG16-FCN16s**
+
+    class    | accuracy  |
+    -------- | ----------
+    class 0  | 0.74944
+    class 1  | 0.87892
+    class 2  | 0.28751
+    class 3  | 0.77799
+    class 4  | 0.72519
+    class 5  | 0.65657
+
+    mean iou score: 0.679271
+
+    **VGG16-FCN8s**
+
+    class    | accuracy  |
+    -------- | ----------
+    class 0  | 0.76292
+    class 1  | 0.87474
+    class 2  | 0.26423
+    class 3  | 0.73023
+    class 4  | 0.71806
+    class 5  | 0.61627
+
+    mean iou score: 0.661078
+    
