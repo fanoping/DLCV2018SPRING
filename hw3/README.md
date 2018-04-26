@@ -9,14 +9,9 @@
 * [HW3](#hw3)
 	* [Table of Content](#table-of-content)
 	* [Requirements](#requirements)
-	* [Instuctions](#instuctions)
-		* [1-1-1 Simulate a function](#1-1-1-simulate-a-function)
-		* [1-1-2 Train on actual tasks](#1-1-2-train-on-actual-tasks)
-	* [1-2 Optimization](#1-2-optimization)
-		* [1-2-1 Visualize the optimization process](#1-2-1-visualize-the-optimization-process)
-		* [1-2-2 Observe gradient norm during training](#1-2-2-observe-gradient-norm-during-training)
-		* [1-2-3 What happens when gradient is almost zero](#1-2-3-what-happens-when-gradient-is-almost-zero)
-		* [1-2-B Bonus: Error surface](#1-2-b-bonus-error-surface)
+	* [Usage](#usage)
+	* [Results](#results)
+		
 
 <!-- /code_chunk_output -->
 
@@ -30,9 +25,8 @@
   * numpy
   * scipy
 
-## Instructions
+## Usage
 
-### 1-1-1 Simulate a function
   * **Training**
 
     **Choose one argument in [...] list**
@@ -57,7 +51,7 @@
     python3 mean_iou_evaluate.py -g [ground truth directory] -p [predict directory]
     ```
 
-  * **Results**
+## Results
 
   	**VGG16-FCN32s**
 
