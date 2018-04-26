@@ -37,12 +37,12 @@ def train(args):
         os.makedirs(args.arch)
 
     callbacks = []
-    early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='min')
+    early_stopping = EarlyStopping(monitor='loss', patience=10, verbose=1, mode='min')
     check_point = ModelCheckpoint(os.path.join(args.arch, 'weights.{epoch:02d}.hdf5'),
                                   verbose=1,
                                   save_best_only=False,
                                   save_weights_only=False,
-                                  monitor='val_loss',
+                                  monitor='loss',
                                   mode='min')
     callbacks.append(early_stopping)
     callbacks.append(check_point)
