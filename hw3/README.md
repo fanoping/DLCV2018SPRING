@@ -18,10 +18,8 @@
 ## Requirements
   * Python 3.6
   * Tensorflow 1.6
-  * keras 2.0.7
-  * scikit-learn 0.19.1
+  * Keras 2.0.7
   * h5py 2.7.1
-  * matplotlib
   * numpy
   * scipy
 
@@ -35,15 +33,14 @@
     ```
 
   * **Visualization of Validation**
-
+    
+    **Choose one argument in [...] list**
     ```
-    python3 validation.py
+    python3 inference.py --input-dir <input directory> --output-dir <output directory> \
+                         --file [FCN32s, FCN16s, FCN8s, <saved model(.hdf5)>]
     ```
-
-    Generates a file "results", you may check the figure generated.
-    ```
-    cd results;
-    ```
+    
+    generates figure in output directory
 
   * **Calculate Mean IOU**
 
@@ -51,10 +48,10 @@
     python3 mean_iou_evaluate.py -g [ground truth directory] -p [predict directory]
     ```
 
-## Results
+## Results (on epoch 20 for each archtecture)
 
   *	**VGG16-FCN32s**
-
+  
     class     | accuracy  |
     --------- | ----------
     class 0   | 0.74253
@@ -67,7 +64,7 @@
     mean iou score: 0.672671
 
   * **VGG16-FCN16s**
-
+  
     class     | accuracy  |
     --------- | ----------
     class 0   | 0.74944

@@ -1,4 +1,4 @@
-from keras.callbacks import EarlyStopping ,ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from data import read_masks, read_sats
@@ -6,15 +6,21 @@ from model import FCN32s, FCN16s, FCN8s
 import argparse
 import os
 
-train_path = 'hw3-train-validation/train/'
-valid_path = 'hw3-train-validation/validation/'
+train_path = 'hw3-train-validation/train'
+valid_path = 'hw3-train-validation/validation'
 
 
 def train(args):
     print("Loading Training Files......")
     sat = read_sats(train_path) / 255.0
     mask = read_masks(train_path)
+
+    print("Loading Validation Files......")
+    sat_valid = read_sats(valid_path) / 255.0
+    mask_valid = read_masks(valid_path)
+
     mask = to_categorical(mask, num_classes=7)
+    mask_valid = to_categorical(mask_valid, num_classes=7)
 
     # optimizer
     adam = Adam(lr=0.0001)
@@ -37,19 +43,19 @@ def train(args):
         os.makedirs(args.arch)
 
     callbacks = []
-    early_stopping = EarlyStopping(monitor='loss', patience=10, verbose=1, mode='min')
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='min')
     check_point = ModelCheckpoint(os.path.join(args.arch, 'weights.{epoch:02d}.hdf5'),
                                   verbose=1,
                                   save_best_only=False,
                                   save_weights_only=False,
-                                  monitor='loss',
+                                  monitor='val_loss',
                                   mode='min')
     callbacks.append(early_stopping)
     callbacks.append(check_point)
 
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
     model.fit(sat, mask, batch_size=args.batch_size, epochs=args.epochs,
-              verbose=1, callbacks=callbacks)
+              verbose=1, callbacks=callbacks, validation_data=(sat_valid, mask_valid))
 
 
 if __name__ == '__main__':
