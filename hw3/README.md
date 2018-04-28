@@ -18,7 +18,7 @@
 ## Requirements
   * Python 3.6
   * Tensorflow 1.6
-  * Keras 2.0.7
+  * Keras 2.1.5
   * h5py 2.7.1
   * numpy
   * scipy

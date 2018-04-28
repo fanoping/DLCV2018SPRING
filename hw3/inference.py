@@ -11,10 +11,19 @@ def main(args):
 
     test_x = read_sats(args.input_dir) / 255.0
     if args.file == "FCN32s":
+        if not os.path.exists("FCN32s/weights.20.hdf5"):
+            print ("Have not trained.")
+            return
         model = load_model("FCN32s/weights.20.hdf5")
     elif args.file == "FCN16s":
+        if not os.path.exists("FCN16s/weights.20.hdf5"):
+            print ("Have not trained.")
+            return
         model = load_model("FCN16s/weights.20.hdf5")
     elif args.file == "FCN8s":
+        if not os.path.exists("FCN8s/weights.20.hdf5"):
+            print ("Have not trained.")
+            return
         model = load_model("FCN8s/weights.20.hdf5")
     else:
         model = load_model(args.file)
@@ -40,7 +49,7 @@ def main(args):
     for i, image in enumerate(masks):
         imsave(os.path.join(args.output_dir, "{0:04}_mask.png".format(i)), image)
 
-    print("Finished Inference")
+    print("Inference Finished")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Homework 3')
