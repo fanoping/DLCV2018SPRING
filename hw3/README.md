@@ -6,7 +6,7 @@
 
 <!-- code_chunk_output -->
 
-* [HW3](#hw3-semantic-segmentation)
+* [HW3 Semantic Segmentation](#hw3-semantic-segmentation)
 	* [Table of Content](#table-of-content)
 	* [Requirements](#requirements)
 	* [Usage](#usage)
@@ -32,23 +32,23 @@
     python3 train.py --batch-size 8 --epochs 20 --arch [FCN32s, FCN16s, FCN8s]
     ```
 
-  * **Visualization of Validation**
+  * **Visualization of Inference Results**
     
     **Choose one argument in [...] list**
     ```
     python3 inference.py --input-dir <input directory> --output-dir <output directory> \
-                         --file [FCN32s, FCN16s, FCN8s, <saved model(.hdf5)>]
+                             --file [FCN32s, FCN16s, FCN8s, <saved model(.hdf5)>]
     ```
     
-    generates figure in output directory
+    generates figures in output directory
 
   * **Calculate Mean IOU**
 
     ```
-    python3 mean_iou_evaluate.py -g [ground truth directory] -p [predict directory]
+    python3 mean_iou_evaluate.py -g <ground truth directory> -p <predict directory>
     ```
 
-## Results (on epoch 20 for each archtecture)
+## Results (on epoch 20 for each architecture)
 
   *	**VGG16-FCN32s**
   
