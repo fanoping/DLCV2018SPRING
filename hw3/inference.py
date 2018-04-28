@@ -38,9 +38,9 @@ def main(args):
         os.makedirs(args.output_dir)
 
     for i, image in enumerate(masks):
-        print(i)
         imsave(os.path.join(args.output_dir, "{0:04}_mask.png".format(i)), image)
 
+    print("Finished Inference")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Homework 3')
