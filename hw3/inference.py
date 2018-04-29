@@ -12,17 +12,17 @@ def main(args):
     test_x = read_sats(args.input_dir) / 255.0
     if args.file == "FCN32s":
         if not os.path.exists("FCN32s/weights.20.hdf5"):
-            print ("Have not trained.")
+            print ("Have not trained over 20 epochs.")
             return
         model = load_model("FCN32s/weights.20.hdf5")
     elif args.file == "FCN16s":
         if not os.path.exists("FCN16s/weights.20.hdf5"):
-            print ("Have not trained.")
+            print ("Have not trained over 20 epochs.")
             return
         model = load_model("FCN16s/weights.20.hdf5")
     elif args.file == "FCN8s":
         if not os.path.exists("FCN8s/weights.20.hdf5"):
-            print ("Have not trained.")
+            print ("Have not trained over 20 epochs.")
             return
         model = load_model("FCN8s/weights.20.hdf5")
     else:
