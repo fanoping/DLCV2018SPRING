@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from utils.preprocess import readfigs
 
 
-class CalebADataset(Dataset):
+class CelebADataset(Dataset):
     def __init__(self, filepath):
         self.train_data = readfigs(filepath)
         self.train_data = torch.FloatTensor(self.train_data)
@@ -49,7 +49,7 @@ class CIFAR10DataLoader:
 
 
 if __name__ == '__main__':
-    #A = CalebADataset('hw4_data/train')
+    #A = CelebADataset('hw4_data/train')
     #print(A[3])
 
     parser = argparse.ArgumentParser()

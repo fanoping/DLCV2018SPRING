@@ -1,18 +1,18 @@
-from dataset import CalebADataset
-from models.autoencoder import AutoEncoder
+from dataset import CelebADataset
+from models.modules import AE, VAE
 import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 import argparse
-import numpy as np
+from models.loss import CustomLoss
 
 
 def main(args):
     # load data
     train_data_path = 'hw4_data/train'
-    train_dataset = CalebADataset(train_data_path)
+    train_dataset = CelebADataset(train_data_path)
     train_data_loader = DataLoader(dataset=train_dataset,
                                    batch_size=args.batch_size,
                                    shuffle=False)
@@ -20,8 +20,10 @@ def main(args):
     with_cuda = not args.no_cuda
 
     # model construction
-    model = AutoEncoder()
-    criterion = nn.MSELoss()
+    if args.arch == "AE":
+        model, criterion = AE(), nn.MSELoss()
+    elif args.arch == "VAE":
+        model, criterion = VAE(), CustomLoss()
     optimizer = Adam(model.parameters(), lr=0.001)
     print(model)
     if with_cuda:
@@ -36,12 +38,13 @@ def main(args):
                 x, y = x.cuda(), y.cuda()
 
             optimizer.zero_grad()
-            output = model(x)
-            loss = criterion(output, y)
+            output, mu, logvar = model(x)
+            # Should be fixed
+            loss = criterion(output, y, mu, logvar)
             loss.backward()
             optimizer.step()
 
-            total_loss+= loss.data[0]
+            total_loss += loss.data[0]
             if batch_idx % args.log_step == 0:
                 print('Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
                     epoch,
@@ -52,6 +55,7 @@ def main(args):
         print("Epoch:{} Loss:{}".format(epoch, total_loss / len(train_data_loader)))
 
         state = {
+            'model': args.arch,
             'epoch': epoch,
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
@@ -59,8 +63,11 @@ def main(args):
         filename = "checkpoints/epoch{}_checkpoint.pth.tar".format(epoch)
         torch.save(state, f=filename)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Train")
+    parser.add_argument('--arch', default='AE', type=str,
+                        help='training architecture [AE, VAE, GAN, ACGAN, InfoGAN]')
     parser.add_argument('--batch-size', default=8, type=int,
                         help='batch size of the model (default: 8)')
     parser.add_argument('--epochs', default=10, type=int,
