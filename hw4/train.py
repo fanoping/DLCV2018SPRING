@@ -10,10 +10,9 @@ def main(args):
     test_data_path = 'hw4_data/test'
     test_data_csv = 'hw4_data/test.csv'
 
-
     trainer = eval(args.arch.upper() + 'trainer')(args, train_data_path, train_data_csv, test_data_path, test_data_csv)
     trainer.train()
-    
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Train")
