@@ -1,5 +1,5 @@
 import torch
-from models.modules import AE
+from models.modules import AE, VAE
 from torch.autograd import Variable
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,25 +36,23 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.show()
     """
-    checkpoint = torch.load('checkpoints/epoch10_checkpoint.pth.tar')
-    model = AE()
+    checkpoint = torch.load('checkpoints/best_checkpoint.pth.tar')
+    model = VAE().cuda()
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 
     y_test = readfigs('hw4_data/test')
-    test = np.array([y_test[0]])
-    print(test*255)
+    test = np.array([y_test[200]])
+    print(test*255.0)
     print(test.shape)
 
 
-    y_pred = np.array(model(Variable(torch.FloatTensor(test))).data.numpy())
-    print(y_pred)
-    print(y_pred.shape)
+    y_pred = np.array(model(Variable(torch.cuda.FloatTensor(test)))[0].cpu().data.numpy())
 
-    y_pred = np.around(y_pred * 255.0)
+    y_pred = np.around(y_pred*255.0)
     print(y_pred)
     y_pred = np.transpose(y_pred, (0, 2, 3, 1))
-    imsave('saved/00000.png', y_pred[0])
+    imsave('saved/test.png', y_pred[0])
 
 
 

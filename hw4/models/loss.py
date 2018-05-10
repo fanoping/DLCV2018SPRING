@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CustomLoss(nn.Module):
-    def __init__(self, lm=0.05):
+    def __init__(self, lm=1e-5):
         super(CustomLoss, self).__init__()
         self.lm = lm
 
@@ -19,8 +19,11 @@ class CustomLoss(nn.Module):
         reconstruction loss: MSE loss
         kl divergence: -.5 * (1 + log(sigma^2) - mean^2 - sigma^2)
         """
-        loss_fn = nn.MSELoss(size_average=False)
-        reconstruction_loss = loss_fn(recon_img, img)
-        kl_divergence = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp_())
+        loss_fn = nn.MSELoss()
+        self.reconstruction_loss = loss_fn(recon_img, img)
+        self.kl_divergence = torch.mean(-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))
 
-        return reconstruction_loss + self.lm*kl_divergence
+        return self.reconstruction_loss + self.lm*self.kl_divergence
+
+    def latestloss(self):
+        return {"MSE": self.reconstruction_loss, "KLD": self.kl_divergence}
