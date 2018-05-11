@@ -19,7 +19,7 @@ class VAEtrainer:
         self.__build_model()
 
         self.min_loss = float('inf')
-        self.loss_list = []
+        self.kld_loss_list, self.mse_loss_list = [], []
 
     def __load_file(self, train_filepath, train_csvfile, test_filepath, test_csvfile):
         self.train_dataset = CelebADataset(train_filepath,
@@ -41,7 +41,7 @@ class VAEtrainer:
 
     def train(self):
         for epoch in range(1, self.args.epochs + 1):
-            total_loss = 0
+            mse_loss, kld_loss, total_loss = 0, 0, 0
             for batch_idx, (in_fig, _) in enumerate(self.train_data_loader):
                 x = Variable(in_fig).cuda() if self.with_cuda else Variable(in_fig)
 
@@ -51,6 +51,8 @@ class VAEtrainer:
                 loss.backward()
                 self.optimizer.step()
 
+                mse_loss += self.criterion.latestloss()['MSE'].data[0]
+                kld_loss += self.criterion.latestloss()['KLD'].data[0]
                 total_loss += loss.data[0]
                 if batch_idx % self.args.log_step == 0:
                     print('Epoch: {}/{} [{}/{} ({:.0f}%)] Loss: mse({:.6f}), kld({:.6f})'.format(
@@ -65,7 +67,8 @@ class VAEtrainer:
                     sys.stdout.write('\033[K')
             print("Epoch: {}/{} Loss:{:.6f}".format(epoch, self.args.epochs, total_loss / len(self.train_data_loader)))
 
-            self.loss_list.append(total_loss / len(self.train_data_loader))
+            self.mse_loss_list.append(mse_loss / len(self.train_data_loader))
+            self.kld_loss_list.append(kld_loss / len(self.train_data_loader))
             self.__save_checkpoint(epoch, total_loss / len(self.train_data_loader))
 
     def __save_checkpoint(self, epoch, current_loss):
@@ -74,7 +77,8 @@ class VAEtrainer:
             'epoch': epoch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
-            'loss': self.loss_list
+            'kld_loss': self.kld_loss_list,
+            'mse_loss': self.mse_loss_list
         }
 
         if not os.path.exists("checkpoints/vae"):
@@ -87,5 +91,6 @@ class VAEtrainer:
             torch.save(state, f=filename)
         if self.min_loss > current_loss:
             torch.save(state, f=best_filename)
+            print("Saving Epoch: {}, Updating loss {:.6f} to {:.6f}".format(epoch, self.min_loss, current_loss))
             self.min_loss = current_loss
-            print("Saving Epoch: {}, Min Loss: {:.6f}".format(epoch, self.min_loss))
+

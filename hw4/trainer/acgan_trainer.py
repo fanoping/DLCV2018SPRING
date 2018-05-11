@@ -21,6 +21,7 @@ class ACGANtrainer:
 
         self.d_loss_list = []
         self.g_loss_list = []
+        self.classifier_loss_list = []
 
     def __load_file(self, train_filepath, train_csvfile, test_filepath, test_csvfile):
         self.train_dataset = GANDataset(train_filepath,
@@ -44,7 +45,7 @@ class ACGANtrainer:
 
     def train(self):
         for epoch in range(1, self.args.epochs + 1):
-            g_total_loss, d_real_total_loss, d_fake_total_loss = 0, 0, 0
+            g_total_loss, d_total_loss, real_classes_total_loss = 0, 0, 0
             for batch_idx, (in_fig, target_classes) in enumerate(self.train_data_loader):
                 batch_size = in_fig.size()[0]
                 x, y = Variable(in_fig), Variable(target_classes)
@@ -57,16 +58,12 @@ class ACGANtrainer:
                 """
                     Train on Discriminator
                 """
-                self.d_model.zero_grad()
+
                 # discriminator on real data
                 real_output, real_output_classes = self.d_model(x)
                 real_output, real_output_classes = real_output.squeeze(), real_output_classes.squeeze()
                 real_loss = self.criterion(real_output, real_labels)
                 real_classes_loss = self.criterion(real_output_classes, y)
-
-                # Back propagation
-                d_real_loss = real_loss + real_classes_loss
-                d_real_loss.backward()
 
                 # discriminator on fake data
                 noise = torch.randn(batch_size, 100)
@@ -80,11 +77,13 @@ class ACGANtrainer:
                 fake_output, fake_output_classes = self.d_model(image_gen)
                 fake_output, fake_output_classes = fake_output.squeeze(), fake_output_classes.squeeze()
                 fake_loss = self.criterion(fake_output, fake_labels)
-                fake_classes_loss = self.criterion(fake_output_classes, fake_classes.squeeze())
+                # fake_classes_loss = self.criterion(fake_output_classes, fake_classes.squeeze())
 
                 # Back propagation
-                d_fake_loss = fake_loss + fake_classes_loss
-                d_fake_loss.backward()
+                self.d_model.zero_grad()
+                d_loss = real_loss + fake_loss
+                d_loss.backward()
+                real_classes_loss.backward()
                 self.d_optimizer.step()
 
                 """
@@ -110,8 +109,10 @@ class ACGANtrainer:
                 self.g_optimizer.step()
 
                 g_total_loss += g_loss.data[0]
-                d_real_total_loss += d_real_loss.data[0]
-                d_fake_total_loss += d_fake_loss.data[0]
+                d_total_loss += d_loss.data[0]
+                real_classes_total_loss += real_classes_loss.data[0]
+                # d_real_total_loss += d_real_loss.data[0]
+                # d_fake_total_loss += d_fake_loss.data[0]
 
                 if batch_idx % self.args.log_step == 0:
                     print('Epoch: {}/{} [{}/{} ({:.0f}%)]'.format(
@@ -122,8 +123,8 @@ class ACGANtrainer:
                         100.0 * batch_idx / len(self.train_data_loader)
                     ), end=' ')
                     print('Loss: D_loss(rl:{:.6f},fl:{:.6f}))'.format(
-                        d_real_loss.data[0],
-                        d_fake_loss.data[0],
+                        real_loss.data[0],
+                        fake_loss.data[0],
                     ), end=' ')
                     print('|', end=' ')
                     print('G_loss(gl:{:.6f}, gcl:{:.6f}, t:{:.6f})'.format(
@@ -133,21 +134,23 @@ class ACGANtrainer:
                     ), end='\r')
                     sys.stdout.write('\033[K')
 
-            print("Epoch: {}/{} Loss: d_loss-{:.6f},{:.6f}, g_loss-{:.6f}".format(epoch,
+            print("Epoch: {}/{} Loss: d_loss-{:.6f}, g_loss-{:.6f}, classfier_loss-{:.6f".format(epoch,
                                                                                   self.args.epochs,
-                                                                                  d_real_total_loss / len(
-                                                                                      self.train_data_loader),
-                                                                                  d_fake_total_loss / len(
+                                                                                  d_total_loss / len(
                                                                                       self.train_data_loader),
                                                                                   g_total_loss / len(
+                                                                                      self.train_data_loader),
+                                                                                  real_classes_total_loss / len(
                                                                                       self.train_data_loader)))
 
             g_ave_loss = g_total_loss / len(self.train_data_loader)
-            d_real_ave_loss = d_real_loss / len(self.train_data_loader)
-            d_fake_ave_loss = d_fake_loss / len(self.train_data_loader)
+            d_ave_loss = d_total_loss / len(self.train_data_loader)
+            classifier_ave_loss = real_classes_total_loss / len(self.train_data_loader)
+            # d_fake_ave_loss = d_fake_loss / len(self.train_data_loader)
 
-            self.d_loss_list.append((d_real_ave_loss, d_fake_ave_loss))
+            self.d_loss_list.append(d_ave_loss)
             self.g_loss_list.append(g_ave_loss)
+            self.classifier_loss_list.append(classifier_ave_loss)
 
             self.__save_checkpoint(epoch)
 
@@ -157,7 +160,7 @@ class ACGANtrainer:
             'epoch': epoch,
             'state_dict': [self.g_model.state_dict(), self.d_model.state_dict()],
             'optimizer': [self.g_optimizer.state_dict(), self.d_optimizer.state_dict()],
-            'loss': {"d_loss": self.d_loss_list, "g_loss": self.g_loss_list}
+            'loss': {"d_loss": self.d_loss_list, "g_loss": self.g_loss_list, "class_loss": self.classifier_loss_list}
         }
 
         if not os.path.exists("checkpoints/acgan"):

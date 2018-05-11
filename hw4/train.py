@@ -15,7 +15,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Train")
+    parser = argparse.ArgumentParser("Homework 4")
     parser.add_argument('--arch', default='ACGAN', type=str,
                         help='training architecture [AE, VAE, GAN, ACGAN, InfoGAN]')
     parser.add_argument('--batch-size', default=128, type=int,
