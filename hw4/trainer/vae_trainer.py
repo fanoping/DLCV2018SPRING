@@ -36,8 +36,8 @@ class VAEtrainer:
 
     def __build_model(self):
         self.model = VAE().cuda() if self.with_cuda else VAE()
-        self.criterion = CustomLoss(5e-7)
-        self.optimizer = Adam(self.model.parameters(), lr=0.0005)
+        self.criterion = CustomLoss(1e-6)
+        self.optimizer = Adam(self.model.parameters(), lr=0.0001, betas=(0.5, 0.999))
 
     def train(self):
         for epoch in range(1, self.args.epochs + 1):

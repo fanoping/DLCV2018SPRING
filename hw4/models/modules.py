@@ -28,13 +28,10 @@ class AE(nn.Module):
 
 
 class VAE(nn.Module):
-    def __init__(self):
+    def __init__(self, mode='train'):
         super(VAE, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.Conv2d(3, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, bias=False),
@@ -42,7 +39,7 @@ class VAE(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
 
         self.sigma = nn.Conv2d(512, 1024, kernel_size=4, bias=False)
@@ -58,18 +55,19 @@ class VAE(nn.Module):
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1, bias=False)
+            nn.ConvTranspose2d(128, 3, kernel_size=4, stride=2, padding=1, bias=False),
         )
 
         self.output = nn.Tanh()
+        self.mode = mode
 
     def reparameterize(self, mu, logvar):
-        std = logvar.mul(0.5).exp_()
-        eps = Variable(torch.cuda.FloatTensor(std.size()).normal_())
-        return eps.mul(std).add_(mu)
+        if self.mode == 'train':
+            std = logvar.mul(0.5).exp_()
+            eps = Variable(torch.cuda.FloatTensor(std.size()).normal_())
+            return eps.mul(std).add_(mu)
+        else:
+            return mu
 
     def forward(self, x):
         encoded = self.encoder(x)

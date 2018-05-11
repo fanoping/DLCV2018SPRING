@@ -7,13 +7,16 @@ from utils.preprocess import readfigs
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-import numpy as np
+from sklearn.manifold import TSNE
+import pandas as pd
 import argparse
 import os
 
 
 def main(args):
-    torch.manual_seed(1337)
+    torch.manual_seed(203)
+
+    output_file = os.path.join(args.output_file)
 
     if not os.path.exists(args.checkpoint):
         return "{} not exists".format(args.checkpoint)
@@ -22,22 +25,21 @@ def main(args):
     with_cuda = not args.no_cuda
 
     checkpoint = torch.load(args.checkpoint)
-    model = VAE().cuda() if with_cuda else VAE()
+    model = VAE('test').cuda() if with_cuda else VAE('test')
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 
-    y_test = readfigs('hw4_data/test')
-    print(y_test.shape)
+    y_test = readfigs(args.input_file)
 
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
     ])
 
+    # 1-3
     test = torch.FloatTensor().cuda() if with_cuda else torch.FloatTensor()
     result = torch.FloatTensor().cuda() if with_cuda else torch.FloatTensor()
 
-    """
     print("Predicting......")
     for i in range(len(y_test)):
         test_img = transform(y_test[i])
@@ -51,9 +53,10 @@ def main(args):
     # Save 10 images
     print("Saving VAE reconstruction of 10 images......")
     result = torch.cat((test[:10], result[:10]), dim=0)
-    torchvision.utils.save_image(result, "saved/vae/test.png", nrow=10)
-    
+    filename = os.path.join(output_file, 'fig1_3.jpg')
+    torchvision.utils.save_image(result, filename, nrow=10)
 
+    # 1-2
     print("Saving loss figure......")
     mse_loss_list = checkpoint['mse_loss']
     kld_loss_list = checkpoint['kld_loss']
@@ -74,53 +77,64 @@ def main(args):
     plt.ylabel('loss')
     plt.legend(loc="best")
     plt.tight_layout()
-    plt.savefig('saved/vae/loss.png')
 
-    """
+    filename = os.path.join(output_file, 'fig1_2.jpg')
+    plt.savefig(filename)
 
-
+    # 1-4
     print("Saving random generation......")
     decoder = model.decoder
     noise = torch.randn(32, 1024).view(-1, 1024, 1, 1)
     noise = Variable(noise).cuda() if with_cuda else Variable(noise)
     predict = decoder(noise)
     predict = predict.mul(0.5).add_(0.5)
-    torchvision.utils.save_image(predict.data, "saved/vae/noise.png", nrow=8)
 
-    print("Done")
+    filename = os.path.join(output_file ,'fig1_4.jpg')
+    torchvision.utils.save_image(predict.data, filename, nrow=8)
+
+    # 1-5
+    print('Computing TSNE......')
+
+    tsne = TSNE(n_components=2, random_state=20, verbose=1, n_iter=1000)
+    encoder = model.encoder
+    mu = model.mu
+
+    latent = torch.FloatTensor().cuda() if with_cuda else torch.FloatTensor()
+
+    print("Encoding......")
+    for i in range(len(y_test)):
+        test_img = transform(y_test[i])
+        test_img = Variable(test_img).cuda() if with_cuda else Variable(test_img)
+        encoded = encoder(test_img.unsqueeze(0))
+        latent_output = mu(encoded)
+        latent = torch.cat((latent, latent_output.data), dim=0)
+
+    latent_sample = latent.squeeze().cpu().numpy()
+    embedded_latent = tsne.fit_transform(latent_sample)
+
+    gender = pd.read_csv('hw4_data/test.csv')
+    gender = gender.ix[:, 8].as_matrix().astype('float')
+
+    plt.figure(figsize=(6, 6))
+    for lat, gen in zip(embedded_latent, gender):
+        if gen == 1.0:
+            plt.scatter(lat[0], lat[1], c='b', alpha=0.3)
+        else:
+            plt.scatter(lat[0], lat[1], c='r', alpha=0.3)
+
+    filename = os.path.join(output_file, 'fig1_5.jpg')
+    plt.savefig(filename)
+
+    print("Done!")
 
 
 if __name__ == '__main__':
-    """
-    func_name_list = ['sinc', 'stair']
-    func_lambda_list = [lambda x: np.sin(4 * np.pi * x) / (4 * np.pi * x + 1e-10),
-                        lambda x: (np.ceil(4 * x) - 2.5) / 1.5]
-    arch_list = ['Deep', 'Middle', 'Shallow']
-    base_arch = 'FC'
-    color_list = ['r', 'g', 'b']
-
-    plt.figure(figsize=(12, 9))
-    for i, func_name in enumerate(func_name_list):
-        func = func_lambda_list[i]
-        x = np.array([i for i in np.linspace(0, 1, 10000)])
-        y_target = np.array([func(i) for i in x])
-        plt.title(func_name+' loss')
-        plt.subplot(220 + i + 1)
-        plt.plot(x, y_target, 'k', label='Ground truth')
-        for arch, color in zip(arch_list, color_list):
-            checkpoint = torch.load('../../models/saved/1-1/'+arch+base_arch+'_'+func_name+'_checkpoint.pth.tar')
-            model = eval(checkpoint['arch'])()
-            model.load_state_dict(checkpoint['state_dict'])
-            model.eval()
-            y_pred = np.array([model(Variable(torch.FloatTensor(np.array([[i]])))).data.numpy() for i in x]).squeeze()
-            plt.plot(x, y_pred, color, label=arch+base_arch)
-            plt.legend(loc="best")
-
-    plt.tight_layout()
-    plt.show()
-    """
     parser = argparse.ArgumentParser(description="VAE inference")
-    parser.add_argument('--checkpoint', required=False,
+    parser.add_argument('--input-file', default='hw4_data/test',
+                        help='input data directory')
+    parser.add_argument('--output-file', default='saved/vae',
+                        help='output data directory')
+    parser.add_argument('--checkpoint',
                         default='checkpoints/vae/best_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--no-cuda', action='store_true',
