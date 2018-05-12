@@ -118,6 +118,7 @@ def main(args):
     gender = gender.ix[:, 8].as_matrix().astype('float')
 
     plt.figure(figsize=(6, 6))
+    plt.title('tSNE results')
     for lat, gen in zip(embedded_latent, gender):
         if gen == 1.0:
             plt.scatter(lat[0], lat[1], c='b', alpha=0.3)
