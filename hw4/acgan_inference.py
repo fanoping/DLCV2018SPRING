@@ -98,11 +98,11 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="GAN inference")
-    parser.add_argument('--output-file', default='saved/gan',
+    parser = argparse.ArgumentParser(description="ACGAN inference")
+    parser.add_argument('--output-file', default='saved/acgan',
                         help='output data directory')
     parser.add_argument('--checkpoint',
-                        default='checkpoints/gan/epoch10_checkpoint.pth.tar',
+                        default='checkpoints/acgan/epoch10_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--no-cuda', action='store_true',
                         help='use CPU in case there\'s no GPU support')
