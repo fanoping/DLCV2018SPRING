@@ -10,7 +10,7 @@ import os
 
 
 def main(args):
-    torch.manual_seed(1)
+    torch.manual_seed(1337)
 
     output_file = os.path.join(args.output_file)
     if not os.path.exists(output_file):
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--output-file', default='saved/gan',
                         help='output data directory')
     parser.add_argument('--checkpoint',
-                        default='checkpoints/gan/epoch10_checkpoint.pth.tar',
+                        default='checkpoints/gan/epoch231_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--no-cuda', action='store_true',
                         help='use CPU in case there\'s no GPU support')
