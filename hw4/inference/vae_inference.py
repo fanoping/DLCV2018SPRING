@@ -14,9 +14,11 @@ import os
 
 
 def main(args):
-    torch.manual_seed(203)
+    torch.manual_seed(1337)
 
     output_file = os.path.join(args.output_file)
+    if not os.path.exists(output_file):
+        os.makedirs(output_file)
 
     if not os.path.exists(args.checkpoint):
         return "{} not exists".format(args.checkpoint)
