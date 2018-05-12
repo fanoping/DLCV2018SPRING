@@ -23,20 +23,20 @@ class VAEtrainer:
 
     def __load_file(self, train_filepath, train_csvfile, test_filepath, test_csvfile):
         self.train_dataset = CelebADataset(train_filepath,
-                                      train_csvfile,
-                                      test_filepath,
-                                      test_csvfile,
-                                      transform=transforms.Compose([
-                                          transforms.ToTensor(),
-                                          transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-                                      ]))
+                                           train_csvfile,
+                                           test_filepath,
+                                           test_csvfile,
+                                           transform=transforms.Compose([
+                                               transforms.ToTensor(),
+                                               transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+                                           ]))
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
-                                       batch_size=self.args.batch_size,
-                                       shuffle=False)
+                                            batch_size=self.args.batch_size,
+                                            shuffle=True)
 
     def __build_model(self):
         self.model = VAE().cuda() if self.with_cuda else VAE()
-        self.criterion = CustomLoss(1e-6)
+        self.criterion = CustomLoss(3e-6)
         self.optimizer = Adam(self.model.parameters(), lr=0.0001, betas=(0.5, 0.999))
 
     def train(self):
@@ -93,4 +93,3 @@ class VAEtrainer:
             torch.save(state, f=best_filename)
             print("Saving Epoch: {}, Updating loss {:.6f} to {:.6f}".format(epoch, self.min_loss, current_loss))
             self.min_loss = current_loss
-

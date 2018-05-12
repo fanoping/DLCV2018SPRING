@@ -3,9 +3,8 @@ from models.modules import Discriminator, Generator, ACGANDiscriminator, ACGANGe
 from torch.autograd import Variable
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.preprocess import readfigs
 import torchvision
-from scipy.misc import imsave
+
 
 if __name__ == '__main__':
     checkpoint = torch.load('checkpoints_acgan/epoch80_checkpoint.pth.tar')
@@ -19,7 +18,7 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     noise = (torch.randn(32, 100))
     fixed_fake_classes = np.zeros((32, 13))
-    fixed_fake_classes[:, 9] = 1  # Smiling
+    fixed_fake_classes[:, 9] = 1 # Smiling
     fake_classes = torch.FloatTensor(fixed_fake_classes)
     noise_1 = torch.cat((noise, fake_classes), dim=1)
     noise_1 = Variable(noise_1).cuda()

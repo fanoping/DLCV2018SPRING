@@ -23,16 +23,17 @@ class GANtrainer:
 
     def __load_file(self, train_filepath, train_csvfile, test_filepath, test_csvfile):
         self.train_dataset = GANDataset(train_filepath,
-                                      train_csvfile,
-                                      test_filepath,
-                                      test_csvfile,
-                                      transform=transforms.Compose([
-                                          transforms.ToTensor(),
-                                          transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-                                      ]))
+                                        train_csvfile,
+                                        test_filepath,
+                                        test_csvfile,
+                                        transform=transforms.Compose([
+                                            transforms.ToTensor(),
+                                            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+                                        ]))
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
-                                       batch_size=self.args.batch_size,
-                                       shuffle=False)
+                                            batch_size=self.args.batch_size,
+                                            shuffle=False)
+
     def __build_model(self):
         self.g_model = GANGenerator().cuda() if self.with_cuda else GANGenerator()
         self.d_model = GANDiscriminator().cuda() if self.with_cuda else GANDiscriminator()
