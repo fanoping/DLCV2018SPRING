@@ -40,7 +40,7 @@ class ACGANtrainer:
         self.g_model = ACGANGenerator().cuda() if self.with_cuda else ACGANGenerator()
         self.d_model = ACGANDiscriminator().cuda() if self.with_cuda else ACGANDiscriminator()
         self.label_criterion = nn.BCELoss()
-        self.class_criterion = nn.NLLLoss()
+        self.class_criterion = nn.BCELoss()
         self.g_optimizer = Adam(self.g_model.parameters(), lr=0.0001, betas=(0.5, 0.999))
         self.d_optimizer = Adam(self.d_model.parameters(), lr=0.0001, betas=(0.5, 0.999))
 
@@ -118,8 +118,8 @@ class ACGANtrainer:
                 d_total_loss += d_loss.data[0]
                 real_total_loss += real_loss.data[0]
                 fake_total_loss += fake_loss.data[0]
-                real_total_acc += real_accuracy.data[0]
-                fake_total_acc += fake_accuracy.data[0]
+                real_total_acc += real_accuracy
+                fake_total_acc += fake_accuracy
 
                 if batch_idx % self.args.log_step == 0:
                     print('Epoch: {}/{} [{}/{} ({:.0f}%)]'.format(
@@ -129,14 +129,12 @@ class ACGANtrainer:
                         len(self.train_data_loader) * self.train_data_loader.batch_size,
                         100.0 * batch_idx / len(self.train_data_loader)
                     ), end=' ')
-                    print('Loss: D_loss-{:.6f})'.format(d_loss), end=', ')
-                    print('G_loss-{:.6f})'.format(
-                        g_loss.data[0]
-                    ), end=', ')
+                    print('Loss: D_loss-{:.6f}'.format(d_loss.data[0]), end=', ')
+                    print('G_loss-{:.6f}'.format(g_loss.data[0]), end=', ')
                     print('Acc: real-{:.6f}, fake-{:.6f}'.format(
-                        real_accuracy.data[0],
-                        fake_accuracy.data[0]
-                    ))
+                        real_accuracy,
+                        fake_accuracy
+                    ), end='\r')
                     sys.stdout.write('\033[K')
 
             print("Epoch: {}/{} Loss: d_loss-{:.6f}, real_loss-{:.6f}, fake_loss-{:.6f}, g_loss-{:.6f}, "
