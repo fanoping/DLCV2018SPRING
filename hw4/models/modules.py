@@ -233,3 +233,86 @@ class ACGANDiscriminator(nn.Module):
         output = self.output(hidden)
         classes = self.classifier(hidden)
         return output, classes
+
+
+class INFOGANGenerator(nn.Module):
+    def __init__(self, latent_size=100, attr_size=13):
+        super(INFOGANGenerator, self).__init__()
+        self.latent_size = latent_size
+        self.attr_size = attr_size
+        self.fc = nn.Sequential(
+            nn.Linear(self.latent_size+self.attr_size, 1024),
+            nn.BatchNorm2d(1024),
+            nn.ReLU(inplace=True)
+        )
+        self.model = nn.Sequential(
+            nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.Tanh()
+        )
+
+        for m in self.modules():
+            if isinstance(m, nn.ConvTranspose2d):
+                m.weight.data.normal_(0.0, 0.02)
+                if m.bias is not None:
+                    m.bias.data.zero_()
+
+    def forward(self, noise):
+        fc_out = self.fc(noise)
+        fc_out = fc_out.view(-1, 1024, 1, 1)
+        output = self.model(fc_out)
+        return output
+
+
+class INFOGANDiscriminator(nn.Module):
+    def __init__(self):
+        super(INFOGANDiscriminator, self).__init__()
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(512, 1024, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(1024),
+            nn.LeakyReLU(0.2, inplace=True)
+        )
+        self.output = nn.Sequential(
+            nn.Linear(1024, 1),
+            nn.Sigmoid()
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(1024, 13),
+            nn.Softmax()
+        )
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                m.weight.data.normal_(0.0, 0.02)
+                if m.bias is not None:
+                    m.bias.data.zero_()
+
+    def forward(self, x):
+        hidden = self.model(x).view(-1, 1024)
+        output = self.output(hidden)
+        classes = self.classifier(hidden)
+        return output, classes

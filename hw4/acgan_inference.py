@@ -85,7 +85,7 @@ def main(args):
     plt.subplot(122)
     plt.title('Real/Fake Accuracy')
     plt.xlabel('epochs')
-    plt.ylabel('loss')
+    plt.ylabel('accuracy')
     plt.plot(x_label, real_acc_list, 'b', label='real accuracy')
     plt.plot(x_label, fake_acc_list, 'r', label='fake accuracy')
     plt.legend(loc="best")
