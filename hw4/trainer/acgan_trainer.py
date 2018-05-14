@@ -68,7 +68,6 @@ class ACGANtrainer:
                     real_label_loss = self.label_criterion(real_output, real_labels)
                     real_classes_loss = self.class_criterion(real_output_classes, y)
                     real_accuracy = np.mean((real_output > 0.5).cpu().data.numpy())
-                    real_classes_acc = np.mean((real_output_classes > 0.5).cpu().data.numpy() == y.cpu().data.numpy())
                     real_loss = real_label_loss + real_classes_loss
 
                     # discriminator on fake data

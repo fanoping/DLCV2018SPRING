@@ -85,7 +85,6 @@ class GANDataset(CelebADataset):
         self.train_attr = pd.concat((self.train_attr, self.test_attr), ignore_index=True)
         self.transform = transform
 
-
     def __getitem__(self, index):
         data = self.train_data[index]
         label = self.train_attr.ix[index, 1:].as_matrix().astype('float')
@@ -107,12 +106,12 @@ if __name__ == '__main__':
     test_data_path = 'hw4_data/test'
     test_data_csv = 'hw4_data/test.csv'
     train_dataset = GANDataset(train_data_path,
-                                 train_data_csv,
-                                 test_data_path,
-                                 test_data_csv,
-                                 transform=transforms.Compose([
+                               train_data_csv,
+                               test_data_path,
+                               test_data_csv,
+                               transform=transforms.Compose([
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-                                 ]))
+                               ]))
 
     print(train_dataset.train_data.shape)

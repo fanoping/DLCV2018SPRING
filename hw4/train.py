@@ -1,6 +1,7 @@
 from trainer.vae_trainer import VAEtrainer
 from trainer.gan_trainer import GANtrainer
 from trainer.acgan_trainer import ACGANtrainer
+from trainer.infogan_trainer import INFOGANtrainer
 import argparse
 
 

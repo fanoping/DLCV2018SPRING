@@ -228,7 +228,7 @@ class INFOGANGenerator(nn.Module):
     def __init__(self):
         super(INFOGANGenerator, self).__init__()
         self.model = nn.Sequential(
-            nn.ConvTranspose2d(113, 1024, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.ConvTranspose2d(111, 1024, kernel_size=4, stride=1, padding=0, bias=False),
             nn.BatchNorm2d(1024),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2, padding=1, bias=False),
@@ -251,7 +251,7 @@ class INFOGANGenerator(nn.Module):
                     m.bias.data.zero_()
 
     def forward(self, noise):
-        noise = noise.view(-1, 113, 1, 1)
+        noise = noise.view(-1, 111, 1, 1)
         output = self.model(noise)
         return output
 
@@ -260,29 +260,20 @@ class INFOGANDiscriminator(nn.Module):
     def __init__(self):
         super(INFOGANDiscriminator, self).__init__()
         self.model = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(3, 128, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.LeakyReLU(0.1, inplace=True),
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.LeakyReLU(0.1, inplace=True),
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(512, 1024, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 1024, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(1024),
-            nn.LeakyReLU(0.2, inplace=True)
+            nn.LeakyReLU(0.1, inplace=True),
         )
         self.output = nn.Sequential(
-            nn.Conv2d(1024, 1, kernel_size=4, stride=1, padding=0, bias=False),
-            nn.Sigmoid()
-        )
-
-        self.classifier = nn.Sequential(
-            nn.Conv2d(1024, 13, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.Conv2d(1024, 12, kernel_size=4, stride=1, padding=0, bias=False),
             nn.Sigmoid()
         )
 
@@ -293,7 +284,6 @@ class INFOGANDiscriminator(nn.Module):
                     m.bias.data.zero_()
 
     def forward(self, x):
-        hidden = self.model(x).view(-1, 1024)
+        hidden = self.model(x)
         output = self.output(hidden)
-        classes = self.classifier(hidden)
-        return output, classes
+        return output
