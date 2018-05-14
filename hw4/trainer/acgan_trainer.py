@@ -34,15 +34,15 @@ class ACGANtrainer:
                                         ]))
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
                                             batch_size=self.args.batch_size,
-                                            shuffle=False)
+                                            shuffle=True)
 
     def __build_model(self):
         self.g_model = ACGANGenerator().cuda() if self.with_cuda else ACGANGenerator()
         self.d_model = ACGANDiscriminator().cuda() if self.with_cuda else ACGANDiscriminator()
         self.label_criterion = nn.BCELoss()
         self.class_criterion = nn.BCELoss()
-        self.g_optimizer = Adam(self.g_model.parameters(), lr=0.0001, betas=(0.5, 0.999))
-        self.d_optimizer = Adam(self.d_model.parameters(), lr=0.0001, betas=(0.5, 0.999))
+        self.g_optimizer = Adam(self.g_model.parameters(), lr=0.0002, betas=(0.5, 0.999))
+        self.d_optimizer = Adam(self.d_model.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
     def train(self):
         for epoch in range(1, self.args.epochs + 1):
@@ -51,65 +51,65 @@ class ACGANtrainer:
             real_total_acc, fake_total_acc = 0, 0
             for batch_idx, (in_fig, target_classes) in enumerate(self.train_data_loader):
                 batch_size = in_fig.size()[0]
-                x, y = Variable(in_fig), Variable(target_classes)
+                x, y = Variable(in_fig), Variable(target_classes[:, 9])  # 9: Smiling
                 # labels
                 real_labels, fake_labels = Variable(torch.ones(batch_size)), Variable(torch.zeros(batch_size))
 
                 if self.with_cuda:
                     x, y, real_labels, fake_labels = x.cuda(), y.cuda(), real_labels.cuda(), fake_labels.cuda()
 
-                """
-                    Train on Discriminator
-                """
-                self.d_model.zero_grad()
-                # discriminator on real data
-                real_output, real_output_classes = self.d_model(x)
-                real_output, real_output_classes = real_output.squeeze(), real_output_classes.squeeze()
-                real_label_loss = self.label_criterion(real_output, real_labels)
-                real_classes_loss = self.class_criterion(real_output_classes, y)
-                real_accuracy = np.mean((real_output > 0.5).cpu().data.numpy())
+                for _ in range(2):
+                    """
+                        Train on Discriminator
+                    """
+                    # discriminator on real data
+                    real_output, real_output_classes = self.d_model(x)
+                    real_output, real_output_classes = real_output.squeeze(), real_output_classes.squeeze()
+                    real_label_loss = self.label_criterion(real_output, real_labels)
+                    real_classes_loss = self.class_criterion(real_output_classes, y)
+                    real_accuracy = np.mean((real_output > 0.5).cpu().data.numpy())
+                    real_classes_acc = np.mean((real_output_classes > 0.5).cpu().data.numpy() == y.cpu().data.numpy())
+                    real_loss = real_label_loss + real_classes_loss
 
-                # Back propagation
-                real_loss = real_label_loss + real_classes_loss
-                real_loss.backward()
+                    # discriminator on fake data
+                    noise = torch.randn(batch_size, 100)
+                    random_fake_classes = np.random.randint(2, size=(batch_size, 1))
+                    fake_classes = torch.FloatTensor(random_fake_classes)
+                    noise = torch.cat((noise, fake_classes), dim=1)
+                    noise = Variable(noise).cuda() if self.with_cuda else Variable(noise)
+                    fake_classes = Variable(fake_classes).cuda() if self.with_cuda else Variable(fake_classes)
+                    image_gen = self.g_model(noise)
 
-                # discriminator on fake data
+                    fake_output, fake_output_classes = self.d_model(image_gen)
+                    fake_output, fake_output_classes = fake_output.squeeze(), fake_output_classes.squeeze()
+                    fake_label_loss = self.label_criterion(fake_output, fake_labels)
+                    fake_classes_loss = self.class_criterion(fake_output_classes, fake_classes.squeeze())
+                    fake_accuracy = np.mean((fake_output < 0.5).cpu().data.numpy())
+                    fake_loss = fake_label_loss + fake_classes_loss
+
+                    # Back propagation
+                    d_loss = real_loss + fake_loss
+                    self.d_model.zero_grad()
+                    d_loss.backward()
+                    self.d_optimizer.step()
+
+                """
+                    Train on Generator
+                """
                 noise = torch.randn(batch_size, 100)
-                random_fake_classes = np.random.randint(2, size=(batch_size, 13))
+                random_fake_classes = np.random.randint(2, size=(batch_size, 1))
                 fake_classes = torch.FloatTensor(random_fake_classes)
                 noise = torch.cat((noise, fake_classes), dim=1)
-                noise = Variable(noise).cuda() if self.with_cuda else Variable(noise).cuda()
+                noise = Variable(noise).cuda() if self.with_cuda else Variable(noise)
                 fake_classes = Variable(fake_classes).cuda() if self.with_cuda else Variable(fake_classes)
                 image_gen = self.g_model(noise)
 
                 fake_output, fake_output_classes = self.d_model(image_gen)
                 fake_output, fake_output_classes = fake_output.squeeze(), fake_output_classes.squeeze()
-                fake_label_loss = self.label_criterion(fake_output, fake_labels)
-                fake_classes_loss = self.class_criterion(fake_output_classes, fake_classes.squeeze())
-                fake_accuracy = np.mean((fake_output < 0.5).cpu().data.numpy())
-
-                # Back propagation
-                fake_loss = fake_label_loss + fake_classes_loss
-                fake_loss.backward()
-                d_loss = real_label_loss + fake_label_loss
-                self.d_optimizer.step()
-
-                """
-                    Train on Generator
-                """
-                self.g_model.zero_grad()
-                noise = torch.randn(batch_size, 100)
-                random_fake_classes = np.random.randint(2, size=(batch_size, 13))
-                fake_classes = torch.FloatTensor(random_fake_classes)
-                noise = torch.cat((noise, fake_classes), dim=1)
-                noise = Variable(noise).cuda() if self.with_cuda else Variable(noise).cuda()
-                image_gen = self.g_model(noise)
-
-                fake_output, fake_output_classes = self.d_model(image_gen)
-                fake_output, fake_output_classes = fake_output.squeeze(), fake_output_classes.squeeze()
                 g_label_loss = self.label_criterion(fake_output, real_labels)
-                g_class_loss = self.class_criterion(fake_output_classes, y)
+                g_class_loss = self.class_criterion(fake_output_classes, fake_classes.squeeze())
 
+                self.g_model.zero_grad()
                 g_loss = g_label_loss + g_class_loss
                 g_loss.backward()
                 self.g_optimizer.step()

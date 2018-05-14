@@ -21,7 +21,8 @@ def main(args):
         os.makedirs(output_file)
 
     if not os.path.exists(args.checkpoint):
-        return "{} not exists".format(args.checkpoint)
+        print("{} not exists".format(args.checkpoint))
+        return
 
     # gpu configuration
     with_cuda = not args.no_cuda
@@ -91,7 +92,7 @@ def main(args):
     predict = decoder(noise)
     predict = predict.mul(0.5).add_(0.5)
 
-    filename = os.path.join(output_file ,'fig1_4.jpg')
+    filename = os.path.join(output_file, 'fig1_4.jpg')
     torchvision.utils.save_image(predict.data, filename, nrow=8)
 
     # 1-5

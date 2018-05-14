@@ -17,7 +17,8 @@ def main(args):
         os.makedirs(output_file)
 
     if not os.path.exists(args.checkpoint):
-        return "{} not exists".format(args.checkpoint)
+        print("{} not exists".format(args.checkpoint))
+        return
 
     # gpu configuration
     with_cuda = not args.no_cuda

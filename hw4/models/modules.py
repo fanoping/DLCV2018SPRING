@@ -155,18 +155,8 @@ class GANGenerator(nn.Module):
 class ACGANGenerator(nn.Module):
     def __init__(self):
         super(ACGANGenerator, self).__init__()
-        """
-        self.fc = nn.Sequential(
-            nn.Linear(self.latent_size+self.attr_size, 1024),
-            nn.BatchNorm2d(1024),
-            nn.ReLU(inplace=True)
-        )
-        """
         self.model = nn.Sequential(
-            nn.ConvTranspose2d(113, 1024, kernel_size=4, stride=1, padding=0, bias=False),
-            nn.BatchNorm2d(1024),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.ConvTranspose2d(101, 512, kernel_size=4, stride=1, padding=0, bias=False),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1, bias=False),
@@ -175,7 +165,10 @@ class ACGANGenerator(nn.Module):
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(128, 3, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1, bias=False),
             nn.Tanh()
         )
 
@@ -186,7 +179,7 @@ class ACGANGenerator(nn.Module):
                     m.bias.data.zero_()
 
     def forward(self, noise):
-        noise = noise.view(-1, 113, 1, 1)
+        noise = noise.view(-1, 101, 1, 1)
         output = self.model(noise)
         return output
 
@@ -196,7 +189,6 @@ class ACGANDiscriminator(nn.Module):
         super(ACGANDiscriminator, self).__init__()
         self.model = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(128),
@@ -207,17 +199,15 @@ class ACGANDiscriminator(nn.Module):
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(512, 1024, kernel_size=4, stride=1, padding=0, bias=False),
-            nn.BatchNorm2d(1024),
-            nn.LeakyReLU(0.2, inplace=True)
+            nn.Conv2d(512, 64, kernel_size=4, stride=1, padding=0, bias=False),
         )
         self.output = nn.Sequential(
-            nn.Conv2d(1024, 1, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.Linear(64, 1),
             nn.Sigmoid()
         )
 
         self.classifier = nn.Sequential(
-            nn.Conv2d(1024, 13, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.Linear(64, 1),
             nn.Sigmoid()
         )
 
@@ -229,8 +219,8 @@ class ACGANDiscriminator(nn.Module):
 
     def forward(self, x):
         hidden = self.model(x)
-        output = self.output(hidden)
-        classes = self.classifier(hidden)
+        output = self.output(hidden.squeeze())
+        classes = self.classifier(hidden.squeeze())
         return output, classes
 
 
@@ -303,7 +293,7 @@ class INFOGANDiscriminator(nn.Module):
                     m.bias.data.zero_()
 
     def forward(self, x):
-        hidden = self.model(x)
+        hidden = self.model(x).view(-1, 1024)
         output = self.output(hidden)
         classes = self.classifier(hidden)
         return output, classes

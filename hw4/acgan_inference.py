@@ -11,20 +11,21 @@ import os
 
 
 def main(args):
-    torch.manual_seed(1)
+    torch.manual_seed(1337)
 
     output_file = os.path.join(args.output_file)
     if not os.path.exists(output_file):
         os.makedirs(output_file)
 
     if not os.path.exists(args.checkpoint):
-        return "{} not exists".format(args.checkpoint)
+        print("{} not exists".format(args.checkpoint))
+        return
 
     # gpu configuration
     with_cuda = not args.no_cuda
 
     checkpoint = torch.load(args.checkpoint)
-    g_model = ACGANGenerator().cuda() if with_cuda else ACGANDiscriminator()
+    g_model = ACGANGenerator().cuda() if with_cuda else ACGANGenerator()
     d_model = ACGANDiscriminator().cuda() if with_cuda else ACGANDiscriminator()
     g_model.load_state_dict(checkpoint['state_dict'][0])
     d_model.load_state_dict(checkpoint['state_dict'][1])
@@ -37,16 +38,13 @@ def main(args):
     noise = torch.randn(10, 100).view(-1, 100, 1, 1)
 
     # random classify
-    classes_no_smile = np.random.randint(0, 1, size=(10, 13))
-    classes_with_smile = np.copy(classes_no_smile)
-
     # for no smiling
-    classes_no_smile[:, 9] = 0
-    classes_no_smile = torch.FloatTensor(classes_no_smile)
+    classes_no_smile = np.zeros((10, 1))
+    classes_no_smile = torch.FloatTensor(classes_no_smile).view(-1, 1, 1, 1)
 
     # for smiling
-    classes_with_smile[:, 9] = 1
-    classes_with_smile = torch.FloatTensor(classes_with_smile)
+    classes_with_smile = np.ones((10, 1))
+    classes_with_smile = torch.FloatTensor(classes_with_smile).view(-1, 1, 1, 1)
 
     noise1 = torch.cat((noise, classes_no_smile), dim=1)
     noise1 = Variable(noise1).cuda() if with_cuda else Variable(noise1)
@@ -61,7 +59,7 @@ def main(args):
     result = torch.cat((fake_image1.data, fake_image2.data), dim=0)
 
     filename = os.path.join(output_file, 'fig3_3.jpg')
-    torchvision.utils.save_image(result.data, filename, nrow=10)
+    torchvision.utils.save_image(result, filename, nrow=10)
 
     # 3-2
     print("Saving loss figure......")
@@ -102,9 +100,8 @@ if __name__ == '__main__':
     parser.add_argument('--output-file', default='saved/acgan',
                         help='output data directory')
     parser.add_argument('--checkpoint',
-                        default='checkpoints/acgan/epoch10_checkpoint.pth.tar',
+                        default='checkpoints/acgan/epoch300_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--no-cuda', action='store_true',
                         help='use CPU in case there\'s no GPU support')
     main(parser.parse_args())
-
