@@ -66,21 +66,21 @@
 
   *	**Auxiliary Classifier Generative Adversarial Network (AC-GAN)**
     
-        * **Usage**
+       * **Usage**
     
-            * Training
+          * Training
     
-                ```
-                python3 train.py --arch acgan --epochs 300 --batch-size 128 --save-freq 1
-                ```
+              ```
+              python3 train.py --arch acgan --epochs 300 --batch-size 128 --save-freq 1
+              ```
         
-            * Visualize/ Inference
+          * Visualize/ Inference
             
-                choose the training epoch of the checkpoint
-                ```
-                python3 acgan_inference.py --output-file saved/acgan \
+              choose the training epoch of the checkpoint
+              ```
+              python3 acgan_inference.py --output-file saved/acgan \
                                      --checkpoint checkpoints/acgan/epoch300_checkpoint.pth.tar
-                ```
+              ```
 
   * **Information Maximizing Generative Adversarial Network (Info-GAN)**
     
