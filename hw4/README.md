@@ -21,6 +21,9 @@
   * Numpy 1.14.2
 
 ## Dataset
+   * CelebFaces Attribute(CelebA) Dataset (40000 training samples / 2621 testing samples)
+   * Images are cropped and downscaled to 64x64 
+   * 13 out of 40 attributes are provided for experiment
 
 ## Image Generation
   * **Variational Autoencoder**
@@ -86,17 +89,21 @@
           * Training
     
             ```
-            python3 train.py --arch gan --epochs 300 --batch-size 128 --save-freq 1
+            python3 train.py --arch infogan --epochs 300 --batch-size 128 --save-freq 1
             ```
         
           * Visualize/ Inference
             
             choose the training epoch of the checkpoint
             ```
-            python3 gan_inference.py --output-file saved/gan \
-                                     --checkpoint checkpoints/gan/epoch231_checkpoint.pth.tar
+            python3 infogan_inference.py --output-file saved/infogan \
+                                     --checkpoint checkpoints/infogan/epoch300_checkpoint.pth.tar
             ```
 
-
+## Results
+   * See figures in the directory "saved"
+       ```
+       cd saved; cd [vae/gan/acgan/infogan]
+       ```
     
     
