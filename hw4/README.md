@@ -89,7 +89,7 @@
           * Training
     
             ```
-            python3 train.py --arch infogan --epochs 300 --batch-size 128 --save-freq 1
+            python3 train.py --arch infogan --epochs 100 --batch-size 128 --save-freq 1
             ```
         
           * Visualize/ Inference
@@ -97,7 +97,7 @@
             choose the training epoch of the checkpoint
             ```
             python3 infogan_inference.py --output-file saved/infogan \
-                                     --checkpoint checkpoints/infogan/epoch300_checkpoint.pth.tar
+                                     --checkpoint checkpoints/infogan/epoch86_checkpoint.pth.tar
             ```
 
 ## Results
