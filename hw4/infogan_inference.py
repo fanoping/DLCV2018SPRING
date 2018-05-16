@@ -44,7 +44,7 @@ def main(args):
 
     fixed_noise = torch.FloatTensor()  # 10 * 128
     for _ in range(10):
-        torch.manual_seed(1337)
+        torch.manual_seed(388)
         tmp = torch.randn(1, 128)
         fixed_noise = torch.cat((fixed_noise, tmp), dim=0)
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--output-file', default='saved/infogan',
                         help='output data directory')
     parser.add_argument('--checkpoint',
-                        default='checkpoints/infogan/epoch50_checkpoint.pth.tar',
+                        default='checkpoints/infogan/epoch86_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--no-cuda', action='store_true',
                         help='use CPU in case there\'s no GPU support')
