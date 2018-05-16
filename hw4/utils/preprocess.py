@@ -21,5 +21,6 @@ def readfigs(filepath):
 
     return pics
 
+
 if __name__ == '__main__':
     pics = readfigs('hw4_data/train')

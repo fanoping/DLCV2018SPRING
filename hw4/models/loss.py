@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+
 
 class CustomLoss(nn.Module):
     def __init__(self, lm=1e-5):
