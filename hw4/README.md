@@ -29,7 +29,7 @@
   * **Variational Autoencoder**
     * **Model**
     
-    ![Image of VAE](https://github.com/fanoping/DLCV2018SPRING.git/hw4/images/vae.png)
+    ![Image of VAE](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/vae.png)
     
     * **Usage**
     
@@ -47,6 +47,10 @@
             ```
   
   * **Generative Adversarial Network (GAN)**
+  
+    * **Model**
+    
+    ![Image of GAN](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/gan.png)
     
     * **Usage**
     
@@ -68,6 +72,10 @@
 ## Feature Disentanglement
 
   *	**Auxiliary Classifier Generative Adversarial Network (AC-GAN)**
+        
+       * **Model**
+    
+        ![Image of VAE](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/acgan.png)
     
        * **Usage**
     
@@ -86,6 +94,10 @@
               ```
 
   * **Information Maximizing Generative Adversarial Network (Info-GAN)**
+  
+      * **Model**
+    
+      ![Image of GAN](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/infogan.png)
     
       * **Usage**
     
