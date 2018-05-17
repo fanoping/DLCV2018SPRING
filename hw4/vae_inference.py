@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import torchvision
 from torchvision import transforms
 from models.modules import VAE
@@ -58,6 +59,12 @@ def main(args):
     result = torch.cat((test[:10], result[:10]), dim=0)
     filename = os.path.join(output_file, 'fig1_3.jpg')
     torchvision.utils.save_image(result, filename, nrow=10)
+    print("Computing MSE Loss:", end=' ')
+    loss_fn = nn.MSELoss()
+    origin = Variable(result[:10]).cuda() if with_cuda else Variable(result[:10])
+    result = Variable(result[10:]).cuda() if with_cuda else Variable(result[10:])
+    recon_loss = loss_fn(origin, result)
+    print(recon_loss.data[0])
 
     # 1-2
     print("Saving loss figure......")
@@ -120,12 +127,16 @@ def main(args):
 
     plt.figure(figsize=(6, 6))
     plt.title('tSNE results')
+    i, j = 0, 0
     for lat, gen in zip(embedded_latent, gender):
         if gen == 1.0:
-            plt.scatter(lat[0], lat[1], c='b', alpha=0.3)
+            plt.scatter(lat[0], lat[1], c='b', alpha=0.3, label='male' if  i == 0 else '')
+            i += 1
         else:
-            plt.scatter(lat[0], lat[1], c='r', alpha=0.3)
+            plt.scatter(lat[0], lat[1], c='r', alpha=0.3, label='female' if  j == 0 else '')
+            j += 1
 
+    plt.legend(loc="best")
     filename = os.path.join(output_file, 'fig1_5.jpg')
     plt.savefig(filename)
 
