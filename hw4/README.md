@@ -75,7 +75,7 @@
         
        * **Model**
     
-       ![Image of VAE](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/acgan.png)
+       ![Image of ACGAN](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/acgan.png)
     
        * **Usage**
     
@@ -97,7 +97,7 @@
   
       * **Model**
     
-      ![Image of GAN](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/infogan.png)
+      ![Image of INFOGAN](https://github.com/fanoping/DLCV2018SPRING/blob/master/hw4/images/infogan.png)
     
       * **Usage**
     
