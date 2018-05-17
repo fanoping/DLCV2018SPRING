@@ -29,7 +29,7 @@
   * **Variational Autoencoder**
     * **Model**
     
-    ![Image of VAE](https://github.com/fanoping/DLCV2018SPRING/hw4/images/vae.png)
+    ![Image of VAE](https://github.com/fanoping/DLCV2018SPRING.git/hw4/images/vae.png)
     
     * **Usage**
     
