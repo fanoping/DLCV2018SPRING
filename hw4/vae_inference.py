@@ -33,7 +33,7 @@ def main(args):
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 
-    y_test = readfigs(args.input_file)
+    y_test = readfigs(os.path.join(args.input_file, 'test'))
 
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -122,7 +122,7 @@ def main(args):
     latent_sample = latent.squeeze().cpu().numpy()
     embedded_latent = tsne.fit_transform(latent_sample)
 
-    gender = pd.read_csv('hw4_data/test.csv')
+    gender = pd.read_csv(os.path.join(args.input_file, 'test.csv'))
     gender = gender.ix[:, 8].as_matrix().astype('float')
 
     plt.figure(figsize=(6, 6))
@@ -130,10 +130,10 @@ def main(args):
     i, j = 0, 0
     for lat, gen in zip(embedded_latent, gender):
         if gen == 1.0:
-            plt.scatter(lat[0], lat[1], c='b', alpha=0.3, label='male' if  i == 0 else '')
+            plt.scatter(lat[0], lat[1], c='b', alpha=0.3, label='male' if i == 0 else '')
             i += 1
         else:
-            plt.scatter(lat[0], lat[1], c='r', alpha=0.3, label='female' if  j == 0 else '')
+            plt.scatter(lat[0], lat[1], c='r', alpha=0.3, label='female' if j == 0 else '')
             j += 1
 
     plt.legend(loc="best")
@@ -145,7 +145,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="VAE inference")
-    parser.add_argument('--input-file', default='hw4_data/test',
+    parser.add_argument('--input-file', default='hw4_data/',
                         help='input data directory')
     parser.add_argument('--output-file', default='saved/vae',
                         help='output data directory')
