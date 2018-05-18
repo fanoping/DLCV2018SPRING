@@ -14,7 +14,6 @@
   * Python 3.6
   * Tensorflow 1.6
   * Torch 0.3.1
-  * Numpy 1.14.2
   * Pandas 0.22.0
   * sckit-learn 0.19.1
   * scipy 1.0.1
