@@ -1,0 +1,11 @@
+Other 0
+Inspect/Read 1
+Open 2
+Take 3
+Cut 4
+Put 5
+Close 6
+Move Around 7
+Divide/Pull Apart 8
+Pour 9
+Transfer 10
