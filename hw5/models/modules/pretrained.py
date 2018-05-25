@@ -3,9 +3,9 @@ import torch.nn as nn
 import torchvision.models as models
 
 
-class VGG19(nn.Module):
+class Vgg19(nn.Module):
     def __init__(self):
-        super(VGG19, self).__init__()
+        super(Vgg19, self).__init__()
         model = models.vgg19(pretrained=True).cuda()
         self.features = model.features
         self.classifier = nn.Sequential(*list(model.classifier.children())[:1])

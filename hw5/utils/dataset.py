@@ -1,9 +1,6 @@
 from utils.reader import getVideoList
-import torchvision.transforms as transforms
 import torch
-import torch.nn as nn
 from torch.utils.data import Dataset
-from torch.autograd import Variable
 import numpy as np
 import pickle
 
@@ -28,7 +25,7 @@ class TrimmedVideo(Dataset):
             with open('valid_video.pkl', 'rb') as f:
                 self.valid_video = pickle.load(f)
 
-            self.valid_label = getVideoList('HW5_data/TrimmedVideos/label/gt_train.csv')['Action_labels']
+            self.valid_label = getVideoList('HW5_data/TrimmedVideos/label/gt_valid.csv')['Action_labels']
             self.valid_label = np.array(self.valid_label).astype(np.uint8)
             self.valid_label = torch.from_numpy(self.valid_label).type(torch.long)
 

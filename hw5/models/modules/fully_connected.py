@@ -1,19 +1,19 @@
 import torch.nn as nn
 
 
-class classfier(nn.Module):
-    def __init__(self, feature_size=2048):
-        super(classfier, self).__init__()
+class Classfier(nn.Module):
+    def __init__(self, feature_size=4096):
+        super(Classfier, self).__init__()
         self.feature_size = feature_size
 
         self.fc = nn.Sequential(
-            nn.Linear(self.feature_size, 1024),
+            nn.Linear(self.feature_size, 4096),
+            nn.BatchNorm1d(4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(inplace=True),
-            nn.Linear(1024, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, 11),
+            nn.Linear(1024, 11),
             nn.Softmax(dim=1)
         )
 
