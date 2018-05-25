@@ -6,10 +6,8 @@ import torch
 from models.rnn_model import RNN
 from utils.dataset import TrimmedVideo
 import numpy as np
-import pickle
 import sys
-# TODO: args for train
-# TODO: save checkpoint
+import os
 
 
 class RNNtrainer:
@@ -19,27 +17,31 @@ class RNNtrainer:
         self.__load_data()
         self.__build_model()
 
+        self.loss_list = []
+        self.acc_list = []
+        self.max_acc = 0
+
     def __load_data(self):
-        self.train_dataset = TrimmedVideo()
+        self.train_dataset = TrimmedVideo('train', pool=False)
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
                                             batch_size=self.args.batch_size,
-                                            shuffle=False)
-        # valid data
-        with open('valid_video.pkl', 'rb') as f:
-            self.valid_video = pickle.load(f)
-        with open('valid_label.pkl', 'rb') as f:
-            self.valid_label = pickle.load(f)
-        self.valid_label = np.array(self.valid_label).astype(np.uint8)
-        self.valid_label = torch.LongTensor(self.valid_label)
+                                            shuffle=True)
+
+        self.valid_dataset = TrimmedVideo('valid', pool=False)
+        self.valid_data_loader = DataLoader(dataset=self.valid_dataset,
+                                            batch_size=self.args.batch_size,
+                                            shuffle=True)
 
     def __build_model(self):
-        self.model = RNN().cuda() if self.with_cuda else RNN()
+        self.model = RNN(self.args).cuda() if self.with_cuda else RNN(self.args)
         self.criterion = nn.CrossEntropyLoss().cuda() if self.with_cuda else nn.CrossEntropyLoss()
-        self.optimizer = Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999))
+        params = list(self.model.encoder.parameters()) + list(self.model.fc.parameters())
+        self.optimizer = Adam(params, lr=0.001, betas=(0.9, 0.999))
 
     def train(self):
-        self.model.train()
+        print(self.model)
         for epoch in range(1, self.args.epochs+1):
+            self.model.train()
             total_loss, total_acc = 0, 0
             for batch_idx, (video, label) in enumerate(self.train_data_loader):
                 video = Variable(video).cuda() if self.with_cuda else Variable(video)
@@ -73,21 +75,60 @@ class RNNtrainer:
                                                                 total_loss / len(self.train_data_loader),
                                                                 total_acc / len(self.train_data_loader)))
 
+            ave_loss = total_loss / len(self.train_data_loader)
+            ave_acc = total_acc / len(self.train_data_loader)
+            self.loss_list.append(ave_loss)
+            self.acc_list.append(ave_acc)
+
+            if self.args.verbosity == 1:
+                _, val_acc = self.valid()
+                self.__save_checkpoint(epoch, val_acc)
+            else:
+                print()
+                self.__save_checkpoint(epoch, ave_acc)
+
     def valid(self):
-        self.model.eval()
+        with torch.no_grad():
+            self.model.eval()
+            total_loss, total_acc = 0, 0
+            for batch_idx, (video, label) in enumerate(self.valid_data_loader):
+                video = Variable(video).cuda() if self.with_cuda else Variable(video)
+                label = Variable(label).cuda() if self.with_cuda else Variable(label)
 
-        if self.with_cuda:
-            valid_video = Variable(self.valid_video).cuda()
-            valid_label = Variable(self.valid_label).cuda()
-        else:
-            valid_video = Variable(self.valid_video)
-            valid_label = Variable(self.valid_label)
+                output = self.model(video)
+                loss = self.criterion(output, label)
 
-        output = self.model(valid_video)
-        loss = self.criterion(output, valid_label)
+                result = torch.max(output, dim=1)[1]
+                accuracy = np.mean((result == label).cpu().data.numpy())
 
-        result = torch.max(output, dim=1)[1]
-        accuracy = np.mean((result == valid_label).cpu().data.numpy())
+                total_loss += loss.data[0]
+                total_acc += accuracy
 
-        print('valid_loss: {:.6f}  valid_acc: {:.6f}'.format(loss.data[0], accuracy))
+            print('valid_loss: {:.6f}  valid_acc: {:.6f}'.format(total_loss / len(self.valid_data_loader),
+                                                                 total_acc / len(self.valid_data_loader)))
+        return total_loss / len(self.valid_data_loader), total_acc / len(self.valid_data_loader)
+
+    def __save_checkpoint(self, epoch, current_acc=None):
+        state = {
+            'model': 'VGG19-classifier',
+            'epoch': epoch,
+            'state_dict': self.model.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'loss': self.loss_list,
+            'accuracy': self.acc_list
+        }
+
+        filepath = os.path.join("checkpoints", "cnn_{}".format(self.args.pretrained.lower()))
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+
+        filename = os.path.join(filepath, "epoch{}_checkpoint.pth.tar".format(epoch))
+        if epoch % self.args.save_freq == 0:
+            torch.save(state, f=filename)
+
+        best_filename = os.path.join(filepath, "best_checkpoint.pth.tar")
+        if self.max_acc < current_acc:
+            torch.save(state, f=best_filename)
+            print("Saving Epoch: {}, Updating acc {:.6f} to {:.6f}".format(epoch, self.max_acc, current_acc))
+            self.max_acc = current_acc
 
