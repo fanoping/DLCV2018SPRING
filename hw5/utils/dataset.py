@@ -53,10 +53,14 @@ class TrimmedVideo(Dataset):
             self.valid_label = torch.LongTensor(self.valid_label)
 
         else:
-            if os.path.exists('cnn_valid_feature.tar'):
-                self.valid_feature = torch.load('cnn_valid_feature.tar')
+            if os.path.exists(self.args.input_feature):
+                self.valid_feature = torch.load(self.args.input_feature)
             else:
                 return NotImplementedError('Haven\'t trained the model yet!')
+
+            self.valid_label = getVideoList(self.args.input_csv)['Action_labels']
+            self.valid_label = np.array(self.valid_label).astype(np.uint8)
+            self.valid_label = torch.LongTensor(self.valid_label)
 
     def cnn_collate_fn(self, batch):
         batch = [(torch.mean(frame, dim=0), label) for frame, label in batch]

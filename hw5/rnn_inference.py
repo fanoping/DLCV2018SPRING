@@ -1,8 +1,9 @@
 import torch
+import torchvision
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from models.modules import Resnet50, Vgg19, Densenet121
-from models.cnn_model import CNN
+from models.rnn_model import RNN
 from utils.dataset import TrimmedVideo
 import matplotlib
 matplotlib.use('agg')
@@ -27,14 +28,14 @@ def main(args):
     with_cuda = not args.no_cuda
 
     checkpoint = torch.load(args.checkpoint)
-    model = CNN(args).cuda() if with_cuda else CNN(args)
+    model = RNN(args).cuda() if with_cuda else RNN(args)
     model.load_state_dict(checkpoint['state_dict'])
 
     # dataset
     valid_dataset = TrimmedVideo(args, 'eval')
     valid_data_loader = DataLoader(dataset=valid_dataset,
                                    batch_size=len(valid_dataset),
-                                   collate_fn=valid_dataset.cnn_collate_fn,
+                                   collate_fn=valid_dataset.rnn_collate_fn,
                                    shuffle=False)
     # 1-3
     result, ground_truth = [], []
@@ -42,9 +43,9 @@ def main(args):
         print("Predicting......")
         model.eval()
 
-        for video, label in valid_data_loader:
+        for video, label, length in valid_data_loader:
             video = Variable(video).cuda() if with_cuda else Variable(video)
-            output = model(video)
+            output = model(video, length)
             value, index = torch.max(output, dim=1)
             result.append(index)
             ground_truth.append(label)
@@ -55,7 +56,7 @@ def main(args):
     accuracy = np.mean(result == ground_truth)
     print("Model accuracy:", accuracy)
 
-    filename = os.path.join(output_file, 'p1_valid.txt')
+    filename = os.path.join(output_file, 'p2_result.txt')
     with open(filename, 'w') as f:
         result = [str(result[idx]) if idx == len(result)-1 else str(result[idx])+'\n' for idx in range(len(result))]
         f.writelines(result)
@@ -89,22 +90,22 @@ def main(args):
     plt.legend(loc="best")
     plt.tight_layout()
 
-    filename = os.path.join(output_file, 'fig1_2.jpg')
+    filename = os.path.join(output_file, 'fig2_2.jpg')
     plt.savefig(filename)
 
     print("Done!")
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="CNN inference")
+    parser = argparse.ArgumentParser(description="RNN inference")
     parser.add_argument('--input-feature', default='cnn_valid_feature.tar',
                         help='input feature file')
     parser.add_argument('--input-csv', default='HW5_data/TrimmedVideos/label/gt_valid.csv',
                         help='input csv file')
-    parser.add_argument('--output-file', default='saved/cnn',
+    parser.add_argument('--output-file', default='saved/rnn',
                         help='output data directory')
     parser.add_argument('--checkpoint',
-                        default='checkpoints/cnn_resnet50/epoch150_checkpoint.pth.tar',
+                        default='checkpoints/rnn_resnet50/epoch150_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--pretrained', default='Resnet50', type=str,
                         help='training architecture [Vgg19, Resnet50]')

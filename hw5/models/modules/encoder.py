@@ -9,7 +9,7 @@ class Encoder(nn.Module):
             input_size=input_size,
             hidden_size=512,
             num_layers=1,
-            dropout=0.2,
+            dropout=0,
             bidirectional=False,
         )
 
