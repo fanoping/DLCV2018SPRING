@@ -2,16 +2,15 @@ import torch.nn as nn
 
 
 class Encoder(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size):
         super(Encoder, self).__init__()
         self.hidden_size = 512
         self.rnn = nn.LSTM(
-            input_size=4096,
+            input_size=input_size,
             hidden_size=512,
             num_layers=1,
-            dropout=0,
+            dropout=0.2,
             bidirectional=False,
-            batch_first=True
         )
 
     def forward(self, in_seq):

@@ -1,23 +1,23 @@
-from .modules import Resnet50, Classfier, Vgg19, Encoder
+from .modules import Classfier, Encoder
+from torch.nn.utils.rnn import pack_padded_sequence
 import torch.nn as nn
 
 
 class RNN(nn.Module):
     def __init__(self, args):
         super(RNN, self).__init__()
-        self.cnn = eval(args.pretrained.title())()
-        self.encoder = Encoder()
-        if args.pretrained.upper() == 'VGG19':
-            self.fc = Classfier(4096)
-        elif args.pretrained.upper() == 'RESNET50':
-            self.fc = Classfier(2048)
+        self.encoder = Encoder(2048)
+        self.fc = Classfier(feature_size=512, mode='rnn')
+        self.args = args
+
         print('Using {} pre-trained model.'.format(args.pretrained))
 
-        for param in self.cnn.parameters():
-            param.requires_grad = False
-
-    def forward(self, frames):
-        cnn_feature = self.cnn(frames)
-        enc_out, hidden_out = self.encoder(cnn_feature)
-        category = self.fc(enc_out)
+    def forward(self, frames, length):
+        """
+            frames:
+                shape: seq_len x batch size x feature size
+        """
+        frames = pack_padded_sequence(frames, length)
+        enc_out, (hidden_out, c0) = self.encoder(frames)
+        category = self.fc(hidden_out[-1])
         return category

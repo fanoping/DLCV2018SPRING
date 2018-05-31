@@ -22,20 +22,22 @@ class CNNtrainer:
         self.max_acc = 0
 
     def __load_data(self):
-        self.train_dataset = TrimmedVideo('train')
+        self.train_dataset = TrimmedVideo(self.args, 'train')
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
                                             batch_size=self.args.batch_size,
+                                            collate_fn=self.train_dataset.cnn_collate_fn,
                                             shuffle=True)
 
-        self.valid_dataset = TrimmedVideo('valid')
+        self.valid_dataset = TrimmedVideo(self.args, 'valid')
         self.valid_data_loader = DataLoader(dataset=self.valid_dataset,
                                             batch_size=self.args.batch_size,
-                                            shuffle=True)
+                                            collate_fn=self.train_dataset.cnn_collate_fn,
+                                            shuffle=False)
 
     def __build_model(self):
         self.model = CNN(self.args).cuda() if self.with_cuda else CNN(self.args)
         self.criterion = nn.CrossEntropyLoss().cuda() if self.with_cuda else nn.CrossEntropyLoss()
-        self.optimizer = Adam(self.model.fc.parameters(), lr=0.001, betas=(0.9, 0.999))
+        self.optimizer = Adam(self.model.fc.parameters(), lr=0.0001, betas=(0.9, 0.999))
 
     def train(self):
         print(self.model)
@@ -109,7 +111,7 @@ class CNNtrainer:
 
     def __save_checkpoint(self, epoch, current_acc=None):
         state = {
-            'model': 'VGG19-classifier',
+            'model': '{}-cnn-classifier'.format(self.args.pretrained),
             'epoch': epoch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
@@ -117,7 +119,7 @@ class CNNtrainer:
             'accuracy': self.acc_list
         }
 
-        filepath = os.path.join("checkpoints", "rnn_{}".format(self.args.pretrained.lower()))
+        filepath = os.path.join("checkpoints", "cnn_{}".format(self.args.pretrained.lower()))
         if not os.path.exists(filepath):
             os.makedirs(filepath)
 

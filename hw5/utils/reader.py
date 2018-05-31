@@ -68,4 +68,5 @@ if __name__ == '__main__':
 
     for i, j, k in zip(example['Action_labels'], example['Video_category'], example['Video_name']):
         a, b, c = i, j, k
+        print(a, b, c)
         break

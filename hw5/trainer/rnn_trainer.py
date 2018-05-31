@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
-from torch.optim import Adam
+from torch.optim import Adam, RMSprop
 import torch.nn as nn
 import torch
 from models.rnn_model import RNN
@@ -22,33 +22,32 @@ class RNNtrainer:
         self.max_acc = 0
 
     def __load_data(self):
-        self.train_dataset = TrimmedVideo('train', pool=False)
+        self.train_dataset = TrimmedVideo(self.args, 'train')
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
                                             batch_size=self.args.batch_size,
+                                            collate_fn=self.train_dataset.rnn_collate_fn,
                                             shuffle=True)
 
-        self.valid_dataset = TrimmedVideo('valid', pool=False)
+        self.valid_dataset = TrimmedVideo(self.args, 'valid')
         self.valid_data_loader = DataLoader(dataset=self.valid_dataset,
                                             batch_size=self.args.batch_size,
-                                            shuffle=True)
+                                            collate_fn=self.valid_dataset.rnn_collate_fn,
+                                            shuffle=False)
 
     def __build_model(self):
         self.model = RNN(self.args).cuda() if self.with_cuda else RNN(self.args)
         self.criterion = nn.CrossEntropyLoss().cuda() if self.with_cuda else nn.CrossEntropyLoss()
-        params = list(self.model.encoder.parameters()) + list(self.model.fc.parameters())
-        self.optimizer = Adam(params, lr=0.001, betas=(0.9, 0.999))
+        self.optimizer = Adam(self.model.parameters(), lr=0.0001)
 
     def train(self):
-        print(self.model)
         for epoch in range(1, self.args.epochs+1):
-            self.model.train()
             total_loss, total_acc = 0, 0
-            for batch_idx, (video, label) in enumerate(self.train_data_loader):
+            for batch_idx, (video, label, length) in enumerate(self.train_data_loader):
                 video = Variable(video).cuda() if self.with_cuda else Variable(video)
                 label = Variable(label).cuda() if self.with_cuda else Variable(label)
 
                 self.optimizer.zero_grad()
-                output = self.model(video)
+                output = self.model(video, length)
                 loss = self.criterion(output, label)
                 loss.backward()
                 self.optimizer.step()
@@ -60,20 +59,20 @@ class RNNtrainer:
                 total_acc += accuracy
                 if batch_idx % self.args.log_step == 0:
                     print('Epoch: {}/{} [{}/{} ({:.0f}%)] loss: {:.6f}, acc: {:.6f}'.format(
-                        epoch,
-                        self.args.epochs,
-                        batch_idx * self.train_data_loader.batch_size,
-                        len(self.train_data_loader) * self.train_data_loader.batch_size,
-                        100.0 * batch_idx / len(self.train_data_loader),
-                        loss.data[0],
-                        accuracy
+                            epoch,
+                            self.args.epochs,
+                            batch_idx * self.train_data_loader.batch_size,
+                            len(self.train_data_loader) * self.train_data_loader.batch_size,
+                            100.0 * batch_idx / len(self.train_data_loader),
+                            loss.data[0],
+                            accuracy
                     ), end='\r')
                     sys.stdout.write('\033[K')
 
             print("Epoch: {}/{} loss:{:.6f}  acc:{:.6f}".format(epoch,
                                                                 self.args.epochs,
                                                                 total_loss / len(self.train_data_loader),
-                                                                total_acc / len(self.train_data_loader)))
+                                                                total_acc / len(self.train_data_loader)), end=' ')
 
             ave_loss = total_loss / len(self.train_data_loader)
             ave_acc = total_acc / len(self.train_data_loader)
@@ -91,11 +90,11 @@ class RNNtrainer:
         with torch.no_grad():
             self.model.eval()
             total_loss, total_acc = 0, 0
-            for batch_idx, (video, label) in enumerate(self.valid_data_loader):
+            for batch_idx, (video, label, length) in enumerate(self.valid_data_loader):
                 video = Variable(video).cuda() if self.with_cuda else Variable(video)
                 label = Variable(label).cuda() if self.with_cuda else Variable(label)
 
-                output = self.model(video)
+                output = self.model(video, length)
                 loss = self.criterion(output, label)
 
                 result = torch.max(output, dim=1)[1]
@@ -106,11 +105,12 @@ class RNNtrainer:
 
             print('valid_loss: {:.6f}  valid_acc: {:.6f}'.format(total_loss / len(self.valid_data_loader),
                                                                  total_acc / len(self.valid_data_loader)))
+            self.model.train()
         return total_loss / len(self.valid_data_loader), total_acc / len(self.valid_data_loader)
 
     def __save_checkpoint(self, epoch, current_acc=None):
         state = {
-            'model': 'VGG19-classifier',
+            'model': '{}-rnn-classifier'.format(self.args.pretrained),
             'epoch': epoch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
@@ -118,7 +118,7 @@ class RNNtrainer:
             'accuracy': self.acc_list
         }
 
-        filepath = os.path.join("checkpoints", "cnn_{}".format(self.args.pretrained.lower()))
+        filepath = os.path.join("checkpoints", "rnn_{}".format(self.args.pretrained.lower()))
         if not os.path.exists(filepath):
             os.makedirs(filepath)
 
