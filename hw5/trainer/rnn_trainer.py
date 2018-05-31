@@ -17,8 +17,8 @@ class RNNtrainer:
         self.__load_data()
         self.__build_model()
 
-        self.loss_list = []
-        self.acc_list = []
+        self.loss_list, self.val_loss_list = [], []
+        self.acc_list, self.val_acc_list = [], []
         self.max_acc = 0
 
     def __load_data(self):
@@ -41,6 +41,7 @@ class RNNtrainer:
 
     def train(self):
         for epoch in range(1, self.args.epochs+1):
+            self.model.train()
             total_loss, total_acc = 0, 0
             for batch_idx, (video, label, length) in enumerate(self.train_data_loader):
                 video = Variable(video).cuda() if self.with_cuda else Variable(video)
@@ -105,7 +106,10 @@ class RNNtrainer:
 
             print('valid_loss: {:.6f}  valid_acc: {:.6f}'.format(total_loss / len(self.valid_data_loader),
                                                                  total_acc / len(self.valid_data_loader)))
-            self.model.train()
+
+            self.val_loss_list.append(total_loss / len(self.valid_data_loader))
+            self.val_acc_list.append(total_acc / len(self.valid_data_loader))
+
         return total_loss / len(self.valid_data_loader), total_acc / len(self.valid_data_loader)
 
     def __save_checkpoint(self, epoch, current_acc=None):
@@ -115,7 +119,9 @@ class RNNtrainer:
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'loss': self.loss_list,
-            'accuracy': self.acc_list
+            'accuracy': self.acc_list,
+            'val_loss': self.val_loss_list,
+            'val_accuracy': self.val_acc_list
         }
 
         filepath = os.path.join("checkpoints", "rnn_{}".format(self.args.pretrained.lower()))

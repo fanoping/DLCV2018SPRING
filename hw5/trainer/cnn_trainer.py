@@ -17,8 +17,8 @@ class CNNtrainer:
         self.__load_data()
         self.__build_model()
 
-        self.loss_list = []
-        self.acc_list = []
+        self.loss_list, self.val_loss_list = [], []
+        self.acc_list, self.val_acc_list = [], []
         self.max_acc = 0
 
     def __load_data(self):
@@ -40,7 +40,6 @@ class CNNtrainer:
         self.optimizer = Adam(self.model.fc.parameters(), lr=0.0001, betas=(0.9, 0.999))
 
     def train(self):
-        print(self.model)
         for epoch in range(1, self.args.epochs+1):
             self.model.train()
             total_loss, total_acc = 0, 0
@@ -61,13 +60,13 @@ class CNNtrainer:
                 total_acc += accuracy
                 if batch_idx % self.args.log_step == 0:
                     print('Epoch: {}/{} [{}/{} ({:.0f}%)] loss: {:.6f}, acc: {:.6f}'.format(
-                        epoch,
-                        self.args.epochs,
-                        batch_idx * self.train_data_loader.batch_size,
-                        len(self.train_data_loader) * self.train_data_loader.batch_size,
-                        100.0 * batch_idx / len(self.train_data_loader),
-                        loss.data[0],
-                        accuracy
+                            epoch,
+                            self.args.epochs,
+                            batch_idx * self.train_data_loader.batch_size,
+                            len(self.train_data_loader) * self.train_data_loader.batch_size,
+                            100.0 * batch_idx / len(self.train_data_loader),
+                            loss.data[0],
+                            accuracy
                     ), end='\r')
                     sys.stdout.write('\033[K')
 
@@ -107,6 +106,10 @@ class CNNtrainer:
 
             print('valid_loss: {:.6f}  valid_acc: {:.6f}'.format(total_loss / len(self.valid_data_loader),
                                                                  total_acc / len(self.valid_data_loader)))
+
+            self.val_loss_list.append(total_loss / len(self.valid_data_loader))
+            self.val_acc_list.append(total_acc / len(self.valid_data_loader))
+
         return total_loss / len(self.valid_data_loader), total_acc / len(self.valid_data_loader)
 
     def __save_checkpoint(self, epoch, current_acc=None):
@@ -116,7 +119,9 @@ class CNNtrainer:
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'loss': self.loss_list,
-            'accuracy': self.acc_list
+            'accuracy': self.acc_list,
+            'val_loss': self.val_loss_list,
+            'val_accuracy': self.val_acc_list
         }
 
         filepath = os.path.join("checkpoints", "cnn_{}".format(self.args.pretrained.lower()))
