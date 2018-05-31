@@ -15,7 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--pretrained', default='Resnet50', type=str,
                         help='training architecture [Vgg19, Resnet50]')
     parser.add_argument('--batch-size', default=128, type=int,
-                        help='batch size of the model (default: 32)')
+                        help='batch size of the model (default: 128)')
     parser.add_argument('--epochs', default=100, type=int,
                         help='training epochs (default: 100)')
     parser.add_argument('--log-step', default=1, type=int,

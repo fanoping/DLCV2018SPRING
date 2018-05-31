@@ -1,21 +1,20 @@
 import torch
-import torchvision
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from models.modules import Resnet50, Vgg19, Densenet121
+from torch.nn.utils.rnn import pack_padded_sequence
 from models.rnn_model import RNN
 from utils.dataset import TrimmedVideo
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 import numpy as np
 import argparse
 import os
 
 
 def main(args):
-    torch.manual_seed(1337)
-
     output_file = os.path.join(args.output_file)
     if not os.path.exists(output_file):
         os.makedirs(output_file)
@@ -37,7 +36,8 @@ def main(args):
                                    batch_size=len(valid_dataset),
                                    collate_fn=valid_dataset.rnn_collate_fn,
                                    shuffle=False)
-    # 1-3
+    """
+    # 2-3
     result, ground_truth = [], []
     with torch.no_grad():
         print("Predicting......")
@@ -61,7 +61,7 @@ def main(args):
         result = [str(result[idx]) if idx == len(result)-1 else str(result[idx])+'\n' for idx in range(len(result))]
         f.writelines(result)
 
-    # 1-2
+    # 2-2
     print("Saving loss figure......")
     loss_list = checkpoint['loss']
     val_loss_list = checkpoint['val_loss']
@@ -92,6 +92,59 @@ def main(args):
 
     filename = os.path.join(output_file, 'fig2_2.jpg')
     plt.savefig(filename)
+    """
+    # 2-4
+    print('Computing TSNE......')
+
+    cnn_valid_dataset = TrimmedVideo(args, 'eval')
+    cnn_valid_data_loader = DataLoader(dataset=cnn_valid_dataset,
+                                       batch_size=len(valid_dataset),
+                                       collate_fn=valid_dataset.cnn_collate_fn,
+                                       shuffle=False)
+
+    with torch.no_grad():
+        model.eval()
+
+        # CNN
+        cnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=2000)
+        for video, label in cnn_valid_data_loader:
+            print("\tCNN based features")
+            cnn_features = video.cpu().numpy()
+            cnn_tsne = cnn_tsne.fit_transform(cnn_features)
+            label = label.cpu().numpy()
+
+            plt.figure(figsize=(6, 6))
+            plt.title('tSNE CNN feature results')
+
+            for lab in np.unique(label):
+                mask = label == lab
+                plt.scatter(cnn_tsne[mask, 0], cnn_tsne[mask, 1], alpha=0.6, label=lab)
+            plt.legend(loc="best")
+            filename = os.path.join(output_file, 'fig2_4.jpg')
+            plt.savefig(filename)
+
+        # RNN
+        rnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=2000)
+        for video, label, length in valid_data_loader:
+            print("\tRNN based features")
+            video = Variable(video).cuda() if with_cuda else Variable(video)
+            frames = pack_padded_sequence(video, length)
+            _, (rnn_features, _) = model.encoder(frames)
+            rnn_features = rnn_features[-1].squeeze()
+            rnn_features = rnn_features.cpu().numpy()
+
+            rnn_tsne = rnn_tsne.fit_transform(rnn_features)
+            label = label.cpu().numpy()
+
+            plt.figure(figsize=(6, 6))
+            plt.title('tSNE RNN feature results')
+
+            for lab in np.unique(label):
+                mask = label == lab
+                plt.scatter(rnn_tsne[mask, 0], rnn_tsne[mask, 1], alpha=0.6, label=lab)
+            plt.legend(loc="best")
+            filename = os.path.join(output_file, 'fig2_5.jpg')
+            plt.savefig(filename)
 
     print("Done!")
 
@@ -104,8 +157,7 @@ if __name__ == '__main__':
                         help='input csv file')
     parser.add_argument('--output-file', default='saved/rnn',
                         help='output data directory')
-    parser.add_argument('--checkpoint',
-                        default='checkpoints/rnn_resnet50/epoch150_checkpoint.pth.tar',
+    parser.add_argument('--checkpoint', default='checkpoints/rnn_resnet50/epoch150_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--pretrained', default='Resnet50', type=str,
                         help='training architecture [Vgg19, Resnet50]')

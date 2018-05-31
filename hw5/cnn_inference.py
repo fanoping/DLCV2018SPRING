@@ -13,8 +13,6 @@ import os
 
 
 def main(args):
-    torch.manual_seed(1337)
-
     output_file = os.path.join(args.output_file)
     if not os.path.exists(output_file):
         os.makedirs(output_file)
@@ -103,8 +101,7 @@ if __name__ == '__main__':
                         help='input csv file')
     parser.add_argument('--output-file', default='saved/cnn',
                         help='output data directory')
-    parser.add_argument('--checkpoint',
-                        default='checkpoints/cnn_resnet50/epoch150_checkpoint.pth.tar',
+    parser.add_argument('--checkpoint', default='checkpoints/cnn_resnet50/epoch150_checkpoint.pth.tar',
                         help='load checkpoint')
     parser.add_argument('--pretrained', default='Resnet50', type=str,
                         help='training architecture [Vgg19, Resnet50]')
