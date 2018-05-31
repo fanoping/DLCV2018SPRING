@@ -36,7 +36,7 @@ def main(args):
                                    batch_size=len(valid_dataset),
                                    collate_fn=valid_dataset.rnn_collate_fn,
                                    shuffle=False)
-    """
+
     # 2-3
     result, ground_truth = [], []
     with torch.no_grad():
@@ -92,7 +92,7 @@ def main(args):
 
     filename = os.path.join(output_file, 'fig2_2.jpg')
     plt.savefig(filename)
-    """
+
     # 2-4
     print('Computing TSNE......')
 
@@ -106,7 +106,7 @@ def main(args):
         model.eval()
 
         # CNN
-        cnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=2000)
+        cnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=1500)
         for video, label in cnn_valid_data_loader:
             print("\tCNN based features")
             cnn_features = video.cpu().numpy()
@@ -124,7 +124,7 @@ def main(args):
             plt.savefig(filename)
 
         # RNN
-        rnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=2000)
+        rnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=1500)
         for video, label, length in valid_data_loader:
             print("\tRNN based features")
             video = Variable(video).cuda() if with_cuda else Variable(video)
