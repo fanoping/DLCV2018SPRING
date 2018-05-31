@@ -61,12 +61,3 @@ def getVideoList(data_path):
 
     od = collections.OrderedDict(sorted(result.items()))
     return od
-
-
-if __name__ == '__main__':
-    example = getVideoList('../HW5_data/TrimmedVideos/label/gt_train.csv')
-
-    for i, j, k in zip(example['Action_labels'], example['Video_category'], example['Video_name']):
-        a, b, c = i, j, k
-        print(a, b, c)
-        break

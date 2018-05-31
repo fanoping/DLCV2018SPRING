@@ -4,7 +4,6 @@ import torch
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 import numpy as np
-from tqdm import tqdm
 import os
 
 
@@ -30,7 +29,7 @@ class TrimmedVideo(Dataset):
 
                 with torch.no_grad():
                     self.pretrained.eval()
-                    self.train_feature = [self.pretrained(frames.cuda()) for _, frames in tqdm(train_video.items())]
+                    self.train_feature = [self.pretrained(frames.cuda()) for _, frames in train_video.items()]
                     torch.save(self.train_feature, 'cnn_train_feature.tar')
 
 
@@ -38,7 +37,7 @@ class TrimmedVideo(Dataset):
             self.train_label = np.array(self.train_label).astype(np.uint8)
             self.train_label = torch.LongTensor(self.train_label)
 
-        else:
+        elif self.mode == 'valid':
             if os.path.exists('cnn_valid_feature.tar') and not self.args.force:
                 self.valid_feature = torch.load('cnn_valid_feature.tar')
             else:
@@ -46,12 +45,18 @@ class TrimmedVideo(Dataset):
 
                 with torch.no_grad():
                     self.pretrained.eval()
-                    self.valid_feature = [self.pretrained(frames.cuda()) for _, frames in tqdm(valid_video.items())]
+                    self.valid_feature = [self.pretrained(frames.cuda()) for _, frames in valid_video.items()]
                     torch.save(self.valid_feature, 'cnn_valid_feature.tar')
 
             self.valid_label = getVideoList('HW5_data/TrimmedVideos/label/gt_valid.csv')['Action_labels']
             self.valid_label = np.array(self.valid_label).astype(np.uint8)
             self.valid_label = torch.LongTensor(self.valid_label)
+
+        else:
+            if os.path.exists('cnn_valid_feature.tar'):
+                self.valid_feature = torch.load('cnn_valid_feature.tar')
+            else:
+                return NotImplementedError('Haven\'t trained the model yet!')
 
     def cnn_collate_fn(self, batch):
         batch = [(torch.mean(frame, dim=0), label) for frame, label in batch]

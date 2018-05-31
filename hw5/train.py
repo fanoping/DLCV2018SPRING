@@ -12,7 +12,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser("Homework 4")
     parser.add_argument('--arch', default='CNN', type=str,
                         help='training architecture [CNN, RNN]')
-    parser.add_argument('--pretrained', default='VGG19', type=str,
+    parser.add_argument('--pretrained', default='Resnet50', type=str,
                         help='training architecture [Vgg19, Resnet50]')
     parser.add_argument('--batch-size', default=128, type=int,
                         help='batch size of the model (default: 32)')

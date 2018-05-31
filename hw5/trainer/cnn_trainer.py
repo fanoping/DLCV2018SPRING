@@ -31,7 +31,7 @@ class CNNtrainer:
         self.valid_dataset = TrimmedVideo(self.args, 'valid')
         self.valid_data_loader = DataLoader(dataset=self.valid_dataset,
                                             batch_size=self.args.batch_size,
-                                            collate_fn=self.train_dataset.cnn_collate_fn,
+                                            collate_fn=self.valid_dataset.cnn_collate_fn,
                                             shuffle=False)
 
     def __build_model(self):

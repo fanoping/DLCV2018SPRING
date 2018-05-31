@@ -6,11 +6,9 @@ import torch.nn as nn
 class RNN(nn.Module):
     def __init__(self, args):
         super(RNN, self).__init__()
+        self.args = args
         self.encoder = Encoder(2048)
         self.fc = Classfier(feature_size=512, mode='rnn')
-        self.args = args
-
-        print('Using {} pre-trained model.'.format(args.pretrained))
 
     def forward(self, frames, length):
         """

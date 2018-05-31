@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
-from torch.optim import Adam, RMSprop
+from torch.optim import Adam
 import torch.nn as nn
 import torch
 from models.rnn_model import RNN
