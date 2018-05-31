@@ -26,4 +26,6 @@ if __name__ == '__main__':
                         help='save checkpoints frequency (default: 1)')
     parser.add_argument('--verbosity', default=1, type=int,
                         help='verbosity 0 or 1 (default: 1)')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='force changing the pretrained feature file')
     main(parser.parse_args())

@@ -23,7 +23,7 @@ class TrimmedVideo(Dataset):
         print("Loading {} data".format(self.mode))
         if self.mode == 'train':
 
-            if os.path.exists('cnn_train_feature.tar'):
+            if os.path.exists('cnn_train_feature.tar') and not self.args.force:
                 self.train_feature = torch.load('cnn_train_feature.tar')
             else:
                 train_video = torch.load('train_video.tar')
@@ -39,7 +39,7 @@ class TrimmedVideo(Dataset):
             self.train_label = torch.LongTensor(self.train_label)
 
         else:
-            if os.path.exists('cnn_valid_feature.tar'):
+            if os.path.exists('cnn_valid_feature.tar') and not self.args.force:
                 self.valid_feature = torch.load('cnn_valid_feature.tar')
             else:
                 valid_video = torch.load('valid_video.tar')
