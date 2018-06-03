@@ -16,6 +16,7 @@
   * Python 3.6
   * Tensorflow 1.6
   * Torch 0.4.0
+  * torchvision 0.2.0
   * sklearn 0.19.1
   * skimage 0.13.1
   * skvideo 1.1.10
