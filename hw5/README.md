@@ -3,17 +3,17 @@
 <!-- /code_chunk_output -->
 
 ## Task
-  * Feature Extraction from pre-trained CNN models
+  * Feature extraction from pre-trained CNN models
     * VGG19
     * Resnet50
     * Densenet121
-  * Trimmed Action Recognition
+  * Trimmed action recognition
     * Training on RNN with sequences of CNN features and labels
-  * Temporal Action Segmentation
+  * Temporal action segmentation
     * Extend RNN model for sequence-to-sequence prediction
 
 ## Requirements
-  * Python 3.6
+  * Python 3.6.4
   * Tensorflow 1.6
   * Torch 0.4.0
   * torchvision 0.2.0
@@ -51,7 +51,7 @@
      ```
 
 ## Implementation
-   * **Feature Extraction from pre-trained CNN models**
+   * **Feature extraction from pre-trained CNN models**
   
       * **Usage**
             
@@ -68,7 +68,7 @@
             python3 cnn_inference.py --input-feature cnn_valid_feature.tar 
                                      --input-csv HW5_data/TrimmedVideos/label/gt_valid.csv
                                      --output-file saved/cnn
-                                     --checkpoint checkpoints/cnn_resnet50/epoch150_checkpoint.pth.tar
+                                     --checkpoint checkpoints/cnn_resnet50/epoch300_checkpoint.pth.tar
                                      --pretrained Resnet50
             ```
       * **Results**
@@ -77,7 +77,7 @@
         --------- | ----------
         0.993823  | 0.507500   
   
-  * **Trimmed Action Recognition**
+  * **Trimmed action recognition**
     
     * **Usage**
     
@@ -101,9 +101,9 @@
     
         train     | valid     |
         --------- | ----------
-        0.995031  | 0.522244   
+        0.841980  | 0.498750  
         
-  *	**Temporal Action Segmentation**
+  *	**Temporal action segmentation**
         
      * **Usage**
     
