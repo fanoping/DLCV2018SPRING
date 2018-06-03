@@ -15,14 +15,14 @@ class Classfier(nn.Module):
                 nn.BatchNorm1d(1024),
                 nn.ReLU(inplace=True),
                 nn.Linear(1024, 11),
-                nn.Softmax(dim=1)
             )
         else:
             self.fc = nn.Sequential(
                 nn.Linear(self.feature_size, 11),
-                nn.Softmax(dim=1)
             )
+        self.output = nn.Softmax(dim=1)
 
     def forward(self, feature):
         category = self.fc(feature)
+        category = self.output(category)
         return category

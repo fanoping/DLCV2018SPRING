@@ -1,5 +1,6 @@
 from trainer.cnn_trainer import CNNtrainer
 from trainer.rnn_trainer import RNNtrainer
+from trainer.seq2seq_trainer import SEQ2SEQtrainer
 import argparse
 
 
@@ -9,7 +10,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Homework 4")
+    parser = argparse.ArgumentParser("Homework 5")
     parser.add_argument('--arch', default='CNN', type=str,
                         help='training architecture [CNN, RNN]')
     parser.add_argument('--pretrained', default='Resnet50', type=str,
@@ -26,6 +27,6 @@ if __name__ == '__main__':
                         help='save checkpoints frequency (default: 1)')
     parser.add_argument('--verbosity', default=1, type=int,
                         help='verbosity 0 or 1 (default: 1)')
-    parser.add_argument('-f', '--force', action='store_true',
+    parser.add_argument('--force', action='store_true',
                         help='force changing the pretrained feature file')
     main(parser.parse_args())

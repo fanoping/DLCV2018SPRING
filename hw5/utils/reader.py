@@ -1,5 +1,6 @@
 import numpy as np
 import skvideo.io
+import skimage.io
 import skimage.transform
 import collections
 import csv
@@ -61,3 +62,43 @@ def getVideoList(data_path):
 
     od = collections.OrderedDict(sorted(result.items()))
     return od
+
+
+def readFullLengthVideo(video_path, video_category):
+
+    transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    ])
+
+    filepath = os.path.join(video_path, video_category)
+    video_frames = sorted([os.path.join(filepath, file) for file in os.listdir(filepath) if file.endswith('.jpg')])
+
+    frames = []
+    for frame_file in video_frames:
+        frame = skimage.io.imread(frame_file)
+        frame = transform(frame)
+        frames.append(frame)
+
+    return frames
+
+
+def getLabelList(label_dir):
+    files = sorted([os.path.join(label_dir, file) for file in os.listdir(label_dir) if file.endswith('.txt')])
+
+    all_video_labels = []
+
+    for file in files:
+        with open(file, 'r') as f:
+            lines = [int(line.strip()) for line in f.readlines()]
+            all_video_labels.append(lines)
+
+    return all_video_labels
+
+
+if __name__ == '__main__':
+    # readFullLengthVideo('../HW5_data/FullLengthVideos/videos/train', 'OP01-R01-PastaSalad')
+    getLabelList('../HW5_data/FullLengthVideos/labels/train')

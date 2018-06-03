@@ -1,43 +1,49 @@
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torch.optim import Adam
-import torch.nn as nn
 import torch
-from models.rnn_model import RNN
-from utils.dataset import TrimmedVideo
+from models.seq2seq import SEQ2SEQ
+from models.loss import CustomLoss
+from utils.dataset import FullLengthVideo
 import numpy as np
 import sys
 import os
 
 
-class RNNtrainer:
+class SEQ2SEQtrainer:
     def __init__(self, args):
         self.args = args
         self.with_cuda = not self.args.no_cuda
         self.__load_data()
         self.__build_model()
+        self.__init_weights()
 
         self.loss_list, self.val_loss_list = [], []
         self.acc_list, self.val_acc_list = [], []
         self.max_acc = 0
 
     def __load_data(self):
-        self.train_dataset = TrimmedVideo(self.args, 'train')
+        self.train_dataset = FullLengthVideo(self.args, 'train')
         self.train_data_loader = DataLoader(dataset=self.train_dataset,
                                             batch_size=self.args.batch_size,
                                             collate_fn=self.train_dataset.rnn_collate_fn,
                                             shuffle=True)
 
-        self.valid_dataset = TrimmedVideo(self.args, 'valid')
+        self.valid_dataset = FullLengthVideo(self.args, 'valid')
         self.valid_data_loader = DataLoader(dataset=self.valid_dataset,
                                             batch_size=self.args.batch_size,
                                             collate_fn=self.valid_dataset.rnn_collate_fn,
                                             shuffle=False)
 
     def __build_model(self):
-        self.model = RNN(self.args).cuda() if self.with_cuda else RNN(self.args)
-        self.criterion = nn.CrossEntropyLoss().cuda() if self.with_cuda else nn.CrossEntropyLoss()
+        self.model = SEQ2SEQ(self.args).cuda() if self.with_cuda else SEQ2SEQ(self.args)
+        self.criterion = CustomLoss().cuda() if self.with_cuda else CustomLoss()
         self.optimizer = Adam(self.model.parameters(), lr=0.0001)
+
+    def __init_weights(self):
+        checkpoint_file = 'checkpoints/rnn_resnet50/best_checkpoint.pth.tar'
+        checkpoint = torch.load(checkpoint_file)
+        self.model.load_state_dict(checkpoint['state_dict'])
 
     def train(self):
         for epoch in range(1, self.args.epochs+1):
@@ -53,7 +59,7 @@ class RNNtrainer:
                 loss.backward()
                 self.optimizer.step()
 
-                result = torch.max(output, dim=1)[1]
+                result = torch.max(output, dim=2)[1]
                 accuracy = np.mean((result == label).cpu().data.numpy())
 
                 total_loss += loss.data[0]
@@ -98,7 +104,7 @@ class RNNtrainer:
                 output = self.model(video, length)
                 loss = self.criterion(output, label)
 
-                result = torch.max(output, dim=1)[1]
+                result = torch.max(output, dim=2)[1]
                 accuracy = np.mean((result == label).cpu().data.numpy())
 
                 total_loss += loss.data[0]
@@ -114,7 +120,7 @@ class RNNtrainer:
 
     def __save_checkpoint(self, epoch, current_acc=None):
         state = {
-            'model': '{}-rnn-classifier'.format(self.args.pretrained),
+            'model': '{}-seq2seq-classifier'.format(self.args.pretrained),
             'epoch': epoch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
@@ -124,7 +130,7 @@ class RNNtrainer:
             'val_accuracy': self.val_acc_list
         }
 
-        filepath = os.path.join("checkpoints", "rnn_{}".format(self.args.pretrained.lower()))
+        filepath = os.path.join("checkpoints", "seq2seq_{}".format(self.args.pretrained.lower()))
         if not os.path.exists(filepath):
             os.makedirs(filepath)
 

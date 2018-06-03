@@ -7,7 +7,7 @@ class RNN(nn.Module):
     def __init__(self, args):
         super(RNN, self).__init__()
         self.args = args
-        self.encoder = Encoder(2048)
+        self.encoder = Encoder(input_size=2048, hidden_size=512)
         self.fc = Classfier(feature_size=512, mode='rnn')
 
     def forward(self, frames, length):

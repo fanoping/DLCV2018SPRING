@@ -2,12 +2,12 @@ import torch.nn as nn
 
 
 class Encoder(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size, hidden_size):
         super(Encoder, self).__init__()
-        self.hidden_size = 512
+        self.hidden_size = hidden_size
         self.rnn = nn.LSTM(
             input_size=input_size,
-            hidden_size=512,
+            hidden_size=self.hidden_size,
             num_layers=1,
             dropout=0,
             bidirectional=False,
@@ -27,6 +27,6 @@ if __name__ == '__main__':
 
     model = Encoder().cuda()
     output, hidden = model(a)
-    print(a.size()) # batch x 4 x 4096
-    print(hidden[0].size(), hidden[1].size()) # num_layers x batch x hidden_size
-    print(output.size()) # batch x 4 x 4096
+    print(a.size())  # batch x 4 x 4096
+    print(hidden[0].size(), hidden[1].size())  # num_layers x batch x hidden_size
+    print(output.size())  # batch x 4 x 4096
