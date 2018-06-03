@@ -72,6 +72,10 @@
                                      --pretrained Resnet50
             ```
       * **Results**
+        
+        train     | valid     |
+        --------- | ----------
+        0.996031  | 0.522244   
   
   * **Trimmed Action Recognition**
     
@@ -93,7 +97,12 @@
                                      --checkpoint checkpoints/rnn_resnet50/epoch150_checkpoint.pth.tar
                                      --pretrained Resnet50
             ```
-    * **Results**     
+    * **Results** 
+    
+        train     | valid     |
+        --------- | ----------
+        0.996031  | 0.522244   
+        
   *	**Temporal Action Segmentation**
         
      * **Usage**
@@ -114,6 +123,10 @@
                                          --pretrained Resnet50
             ```
      * **Results**
+        
+        train     | valid     |
+        --------- | ----------
+        0.752159  | 0.566797
      
 ## Learning curve / Results
    * See figures in the directory "saved"
