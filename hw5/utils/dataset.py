@@ -5,7 +5,6 @@ from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 import numpy as np
 import os
-from tqdm import tqdm
 import random
 
 
@@ -122,7 +121,7 @@ class FullLengthVideo(Dataset):
                     for _, frames in train_video.items():
                         video = []
                         frames = frames.cuda() if self.with_cuda else frames
-                        for i in tqdm(range(len(frames))):
+                        for i in range(len(frames)):
                             video.append(self.pretrained(frames[i].unsqueeze(0)).squeeze(0))
                         self.train_feature.append(torch.stack(video))
 
@@ -145,7 +144,7 @@ class FullLengthVideo(Dataset):
                     for _, frames in valid_video.items():
                         video = []
                         frames = frames.cuda() if self.with_cuda else frames
-                        for i in tqdm(range(len(frames))):
+                        for i in range(len(frames)):
                             video.append(self.pretrained(frames[i].unsqueeze(0)).squeeze(0))
                         self.valid_feature.append(torch.stack(video))
 
