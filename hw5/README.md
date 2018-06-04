@@ -75,7 +75,7 @@
         
         train     | valid     |
         --------- | ----------
-        0.993823  | 0.507500   
+        0.993823  | 0.485493   
   
   * **Trimmed action recognition**
     
@@ -101,7 +101,7 @@
     
         train     | valid     |
         --------- | ----------
-        0.841980  | 0.498750  
+        0.841980  | 0.520309  
         
   *	**Temporal action segmentation**
         

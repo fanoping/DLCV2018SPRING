@@ -106,7 +106,7 @@ def main(args):
         model.eval()
 
         # CNN
-        cnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=1500)
+        cnn_tsne = TSNE(n_components=2, random_state=40, verbose=1, n_iter=1500)
         for video, label in cnn_valid_data_loader:
             print("\tCNN based features")
             cnn_features = video.cpu().numpy()
@@ -124,7 +124,7 @@ def main(args):
             plt.savefig(filename)
 
         # RNN
-        rnn_tsne = TSNE(n_components=2, random_state=30, verbose=1, n_iter=1500)
+        rnn_tsne = TSNE(n_components=2, random_state=40, verbose=1, n_iter=1500)
         for video, label, length in valid_data_loader:
             print("\tRNN based features")
             video = Variable(video).cuda() if with_cuda else Variable(video)
@@ -153,8 +153,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="RNN inference")
     parser.add_argument('--input-feature', default='cnn_valid_feature.tar',
                         help='input feature file')
+    parser.add_argument('--input-video', default='valid_video.tar',
+                        help='input video file')
     parser.add_argument('--input-csv', default='HW5_data/TrimmedVideos/label/gt_valid.csv',
                         help='input csv file')
+    parser.add_argument('--video-dir', default='HW5_data/TrimmedVideos/video/valid',
+                        help='video data for train/validation')
     parser.add_argument('--output-file', default='saved/rnn',
                         help='output data directory')
     parser.add_argument('--checkpoint', default='checkpoints/rnn_resnet50/epoch150_checkpoint.pth.tar',

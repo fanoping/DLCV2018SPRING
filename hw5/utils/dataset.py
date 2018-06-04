@@ -58,7 +58,12 @@ class TrimmedVideo(Dataset):
             if os.path.exists(self.args.input_feature):
                 self.valid_feature = torch.load(self.args.input_feature)
             else:
-                return NotImplementedError('Haven\'t trained the model yet!')
+                valid_video = torch.load(self.args.input_video)
+
+                with torch.no_grad():
+                    self.pretrained.eval()
+                    self.valid_feature = [self.pretrained(frames.cuda()) for _, frames in valid_video.items()]
+                    torch.save(self.valid_feature, self.args.input_feature)
 
             self.valid_label = getVideoList(self.args.input_csv)['Action_labels']
             self.valid_label = np.array(self.valid_label).astype(np.uint8)
@@ -157,10 +162,27 @@ class FullLengthVideo(Dataset):
             if os.path.exists(self.args.input_feature):
                 self.valid_feature = torch.load(self.args.input_feature)
             else:
-                return NotImplementedError('Haven\'t trained the model yet!')
+                valid_video = torch.load(self.args.full_length_file)
 
-            self.valid_label = getLabelList(self.args.input_txt)
-            self.valid_label = [torch.LongTensor(labels) for labels in self.valid_label]
+                self.valid_feature = []
+                with torch.no_grad():
+                    self.pretrained.eval()
+
+                    for _, frames in valid_video.items():
+                        video = []
+                        frames = frames.cuda() if self.with_cuda else frames
+                        for i in range(len(frames)):
+                            video.append(self.pretrained(frames[i].unsqueeze(0)).squeeze(0))
+                        self.valid_feature.append(torch.stack(video))
+
+                    torch.save(self.valid_feature, self.args.input_feature)
+
+            # self.valid_label = getLabelList('HW5_data/FullLengthVideos/labels/valid')
+            # self.valid_label = [torch.LongTensor(labels) for labels in self.valid_label]
+
+            # implement for not generating figures
+            self.valid_label = [None for _ in range(len(self.valid_feature))]
+
 
     def rnn_collate_fn(self, batch):
         if self.mode == 'eval':
@@ -170,8 +192,8 @@ class FullLengthVideo(Dataset):
                 label.append(item)
             data = pad_sequence(data)
             length = [frame.size(0) for frame in data]
-            label = torch.stack(label)
-            label = label.transpose(0, 1)
+            # label = torch.stack(label)
+            # label = label.transpose(0, 1)
         else:
             max_sample = 512
             data, label = [], []

@@ -97,8 +97,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CNN inference")
     parser.add_argument('--input-feature', default='cnn_valid_feature.tar',
                         help='input feature file')
+    parser.add_argument('--input-video', default='valid_video.tar',
+                        help='input video file')
     parser.add_argument('--input-csv', default='HW5_data/TrimmedVideos/label/gt_valid.csv',
                         help='input csv file')
+    parser.add_argument('--video-dir', default='HW5_data/TrimmedVideos/video/train',
+                        help='video data for train/validation')
     parser.add_argument('--output-file', default='saved/cnn',
                         help='output data directory')
     parser.add_argument('--checkpoint', default='checkpoints/cnn_resnet50/epoch150_checkpoint.pth.tar',

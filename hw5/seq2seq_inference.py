@@ -36,35 +36,38 @@ def main(args):
                                    shuffle=False)
 
     # 3-3
-    result, ground_truth, accuracy = [], [], 0
+    result = []
+    # ground_truth = []
+    # accuracy = 0
+
     with torch.no_grad():
         print("Predicting......")
         model.eval()
 
-        for video, label, length in valid_data_loader:
+        for video, _, length in valid_data_loader:
             video = Variable(video).cuda() if with_cuda else Variable(video)
             output = model(video, length)
             value, index = torch.max(output, dim=2)
             result.append(index.squeeze())
-            ground_truth.append(label.squeeze())
-            accuracy += np.mean((index.cpu().data == label).numpy())
-            print(np.mean((index.cpu().data == label).numpy()))
+            # ground_truth.append(label.squeeze())
+            # accuracy += np.mean((index.cpu().data == label).numpy())
+            # print(np.mean((index.cpu().data == label).numpy()))
 
-    print("Model average accuracy:", accuracy / len(valid_data_loader))
+    # print("Model average accuracy:", accuracy / len(valid_data_loader))
+    files = sorted([file for file in os.listdir(args.full_length_dir) if file.startswith('OP')])
 
-    files = sorted([(file) for file in os.listdir(args.input_txt) if file.endswith('.txt')])
-
-    ax = plt.subplot(211)
-    ax2 = plt.subplot(212)
+    # ax = plt.subplot(211)
+    # ax2 = plt.subplot(212)
     for videos in range(len(result)):
-        colors = ['w', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'C0', 'C1', 'C2']
-        test = result[videos].cpu().data.numpy().tolist()
-
         # write output file
+        test = result[videos].cpu().data.numpy().tolist()
         filename = os.path.join(output_file, files[videos])
-        with open(filename, 'w') as f:
+        with open(filename + '.txt', 'w') as f:
             writeout = [str(test[idx]) + '\n' for idx in range(len(test))]
             f.writelines(writeout)
+
+        """
+        colors = ['w', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'C0', 'C1', 'C2']
 
         cmap = mpl.colors.ListedColormap([colors[idx] for idx in test])
         bounds = [i for i in range(len(test))]
@@ -89,6 +92,7 @@ def main(args):
 
         filename = os.path.join(output_file, '{}_seq.jpg'.format(files[videos][:-4]))
         plt.savefig(filename)
+        """
 
     # 3-2
     print("Saving loss figure......")
@@ -129,8 +133,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Seq2Seq inference")
     parser.add_argument('--input-feature', default='rnn_full_length_valid_feature.tar',
                         help='input feature file')
-    parser.add_argument('--input-txt', default='HW5_data/FullLengthVideos/labels/valid',
-                        help='input csv file')
+    parser.add_argument('--full-length-dir', default='HW5_data/FullLengthVideos/videos/valid',
+                        help='video data for train/validation')
+    parser.add_argument('--full-length-file', default='train_full_length_video.tar',
+                        help='full length video file for dumping tar')
     parser.add_argument('--output-file', default='saved/seq2seq',
                         help='output data directory')
     parser.add_argument('--checkpoint', default='checkpoints/seq2seq_resnet50/best_checkpoint.pth.tar',
