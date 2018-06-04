@@ -118,6 +118,7 @@
         
             ```
             python3 seq2seq_inference.py --input-feature rnn_full_length_valid_feature.tar
+                                         --input-txt HW5_data/FullLengthVideos/labels/valid
                                          --output-file saved/seq2seq
                                          --checkpoint checkpoints/seq2seq_resnet50/epoch150_checkpoint.pth.tar
                                          --pretrained Resnet50

@@ -159,31 +159,30 @@ class FullLengthVideo(Dataset):
             else:
                 return NotImplementedError('Haven\'t trained the model yet!')
 
-            self.valid_label = getLabelList(self.args.input_csv)
+            self.valid_label = getLabelList(self.args.input_txt)
             self.valid_label = [torch.LongTensor(labels) for labels in self.valid_label]
 
     def rnn_collate_fn(self, batch):
-        """
-        if batch[0][0].size(0) > max_sample:
-            selected_idx = sorted(random.sample([i for i in range(0, batch[0][0].size(0))], 512))
-            data = batch[0][0].view(batch[0][0].size(0), 1,  -1)[selected_idx]
-            length = [max_sample]
-            label = batch[0][1][selected_idx]
+        if self.mode == 'eval':
+            data, label = [], []
+            for frame, item in batch:
+                data.append(frame.view(frame.size(0), -1))
+                label.append(item)
+            data = pad_sequence(data)
+            length = [frame.size(0) for frame in data]
+            label = torch.stack(label)
+            label = label.transpose(0, 1)
         else:
-            data = batch[0][0].view(batch[0][0].size(0), 1, -1)
-            length = [len(batch[0][0])]
-            label = batch[0][1]
-        """
-        max_sample = 512
-        data, label = [], []
-        for frame, item in batch:
-            selected_idx = sorted(random.sample([i for i in range(0, frame.size(0))], max_sample))
-            data.append(frame.view(frame.size(0), -1)[selected_idx])
-            label.append(item[selected_idx])
-        data = pad_sequence(data)
-        length = [frame.size(0) for frame in data]
-        label = torch.stack(label)
-        label = label.transpose(0, 1)
+            max_sample = 512
+            data, label = [], []
+            for frame, item in batch:
+                selected_idx = sorted(random.sample([i for i in range(0, frame.size(0))], max_sample))
+                data.append(frame.view(frame.size(0), -1)[selected_idx])
+                label.append(item[selected_idx])
+            data = pad_sequence(data)
+            length = [frame.size(0) for frame in data]
+            label = torch.stack(label)
+            label = label.transpose(0, 1)
 
         return [data, label, length]
 
