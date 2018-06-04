@@ -135,7 +135,7 @@ if __name__ == '__main__':
                         help='input feature file')
     parser.add_argument('--full-length-dir', default='HW5_data/FullLengthVideos/videos/valid',
                         help='video data for train/validation')
-    parser.add_argument('--full-length-file', default='train_full_length_video.tar',
+    parser.add_argument('--full-length-file', default='valid_full_length_video.tar',
                         help='full length video file for dumping tar')
     parser.add_argument('--output-file', default='saved/seq2seq',
                         help='output data directory')

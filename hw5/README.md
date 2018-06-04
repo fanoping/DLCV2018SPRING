@@ -4,8 +4,8 @@
 
 ## Task
   * Feature extraction from pre-trained CNN models
-    * VGG19
-    * Resnet50
+    * VGG19 
+    * Resnet50 (Done)
     * Densenet121
   * Trimmed action recognition
     * Training on RNN with sequences of CNN features and labels
@@ -29,21 +29,23 @@
    * For task 1 & 2, videos are trimmed into frames (3236 training samples / 517 validation samples)
    * For task 3, full video length is required (29 training samples / 5 validation samples)
 
-## Preprocess
+## Data Pre-process
    
    * **Train**
      
      ```
-        python3 preprocess.py --csv-file HW5_data/TrimmedVideos/label/gt_train.csv 
+        python3 preprocess.py --mode [trimmed, full-length]
+                              --csv-file HW5_data/TrimmedVideos/label/gt_train.csv 
                               --video-dir HW5_data/TrimmedVideos/video/train 
                               --video-file train_video.tar
                               --full-length-dir HW5_data/FullLengthVideos/videos/train
                               --full-length-file train_full_length_video.tar
      ```
-   * **Valid**
+   * **Validation**
      
      ```
-        python3 preprocess.py --csv-file HW5_data/TrimmedVideos/label/gt_valid.csv 
+        python3 preprocess.py --mode [trimmed, full-length]
+                              --csv-file HW5_data/TrimmedVideos/label/gt_valid.csv 
                               --video-dir HW5_data/TrimmedVideos/video/valid 
                               --video-file valid_video.tar
                               --full-length-dir HW5_data/FullLengthVideos/videos/valid
@@ -62,11 +64,13 @@
                              --epochs 150 --batch-size 128 --save-freq 1 --verbosity 1      
             ```
             
-        * Visualize/ Inference
+        * Visualize / Inference
         
             ```
             python3 cnn_inference.py --input-feature cnn_valid_feature.tar 
+                                     --input-video valid_video.tar
                                      --input-csv HW5_data/TrimmedVideos/label/gt_valid.csv
+                                     --video-dir HW5_data/TrimmedVideos/video/valid
                                      --output-file saved/cnn
                                      --checkpoint checkpoints/cnn_resnet50/epoch300_checkpoint.pth.tar
                                      --pretrained Resnet50
@@ -88,11 +92,13 @@
                              --epochs 150 --batch-size 128 --save-freq 1 --verbosity 1      
             ```
             
-        * Visualize/ Inference
+        * Visualize / Inference
         
             ```
             python3 rnn_inference.py --input-feature cnn_valid_feature.tar 
+                                     --input-video valid_video.tar
                                      --input-csv HW5_data/TrimmedVideos/label/gt_valid.csv
+                                     --video-dir HW5_data/TrimmedVideos/video/valid
                                      --output-file saved/rnn
                                      --checkpoint checkpoints/rnn_resnet50/epoch150_checkpoint.pth.tar
                                      --pretrained Resnet50
@@ -114,11 +120,12 @@
                              --epochs 300 --batch-size 8 --save-freq 1 --verbosity 1      
             ```
             
-        * Visualize/ Inference
+        * Visualize / Inference
         
             ```
             python3 seq2seq_inference.py --input-feature rnn_full_length_valid_feature.tar
-                                         --input-txt HW5_data/FullLengthVideos/labels/valid
+                                         --full-length-dir HW5_data/FullLengthVideos/videos/valid
+                                         --full-length-file valid_full_length_video.tar
                                          --output-file saved/seq2seq
                                          --checkpoint checkpoints/seq2seq_resnet50/epoch150_checkpoint.pth.tar
                                          --pretrained Resnet50

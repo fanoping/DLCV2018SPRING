@@ -101,7 +101,7 @@ if __name__ == '__main__':
                         help='input video file')
     parser.add_argument('--input-csv', default='HW5_data/TrimmedVideos/label/gt_valid.csv',
                         help='input csv file')
-    parser.add_argument('--video-dir', default='HW5_data/TrimmedVideos/video/train',
+    parser.add_argument('--video-dir', default='HW5_data/TrimmedVideos/video/valid',
                         help='video data for train/validation')
     parser.add_argument('--output-file', default='saved/cnn',
                         help='output data directory')
