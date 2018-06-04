@@ -77,7 +77,7 @@
             ```
       * **Results**
         
-        train     | valid     |
+        train acc | valid acc |
         --------- | ----------
         0.993823  | 0.485493   
   
@@ -105,7 +105,7 @@
             ```
     * **Results** 
     
-        train     | valid     |
+        train acc | valid acc |
         --------- | ----------
         0.841980  | 0.520309  
         
@@ -132,7 +132,7 @@
             ```
      * **Results**
         
-        train     | valid     |
+        train acc | valid acc |
         --------- | ----------
         0.752159  | 0.566797
      
