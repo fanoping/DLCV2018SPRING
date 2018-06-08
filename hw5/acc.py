@@ -11,6 +11,7 @@ correct = 0
 total = 0
 for i in range(len(predict)):
     print(len(predict[i]))
+    print(np.sum(np.array(predict[i])==np.array(ground[i])))
     correct += np.sum(np.array(predict[i])==np.array(ground[i]))
     total += len(predict[i])
 
