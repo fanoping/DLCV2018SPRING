@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-cuda', action='store_true',
                         help='use CPU in case there\'s no GPU support')
     parser.add_argument('--verbosity', action='store_true',
-                        help='validation visualization')
+                        help='evaluation visualization (output csv)')
     parser.add_argument('--save-freq', default=1, type=int,
                         help='save checkpoints frequency (default: 1)')
     main(parser.parse_args())
