@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', default=100, type=int,
                         help='training epochs (default: 100)')
     parser.add_argument('--log-step', default=1, type=int,
-                        help='printing step size (default: 10')
+                        help='printing step size (default: 1')
     parser.add_argument('--checkpoint', default='checkpoints/mnist/epoch50_checkpoint.pth.tar',
                         help='load initialize weight from checkpoint')
     parser.add_argument('--no-cuda', action='store_true',

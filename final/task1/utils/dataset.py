@@ -18,7 +18,7 @@ class FashionMNIST(Dataset):
     def __load_data(self):
         if self.mode == 'train':
             base = self.args.train_dir
-            classes_dir = sorted([os.path.join(base, file) for file in os.listdir(base) if not file.startswith('.DS')])
+            classes_dir = [os.path.join(base, file) for file in sorted(os.listdir(base)) if not file.startswith('.DS')]
             for idx, dir in enumerate(classes_dir):
                 images = [np.expand_dims(imread(os.path.join(dir, image)), axis=2)
                           for image in sorted(os.listdir(dir)) if image.endswith(".png")]
@@ -28,7 +28,7 @@ class FashionMNIST(Dataset):
         else:
             base = self.args.test_dir
             self.image = [np.expand_dims(imread(os.path.join(base, image)), axis=2)
-                          for image in sorted(os.listdir(base)) if image.endswith(".png")]
+                          for image in sorted(os.listdir(base), key=lambda x: int(x[:-4])) if image.endswith(".png")]
             self.label = [0 for _ in range(len(self.image))]
 
     def __getitem__(self, index):
