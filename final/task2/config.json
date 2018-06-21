@@ -9,12 +9,6 @@
             "k_query": 5,
             "episodes": 100
         },
-        "valid": {
-            "n_way": 20,
-            "k_shot": 5,
-            "k_query": 5,
-            "episodes": 100
-        },
         "test": {
             "n_way": 20,
             "k_shot": 5,

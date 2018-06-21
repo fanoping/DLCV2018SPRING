@@ -31,8 +31,7 @@ class FewshotTrainer:
                                         ]))
         self.support_sampler = Sampler(labels=self.support_dataset.label,
                                        n_way=self.config['sampler']['train']['n_way'],
-                                       k_shot=self.config['sampler']['train']['k_shot'],
-                                       k_query=self.config['sampler']['train']['k_query'],
+                                       k_samples=self.config['sampler']['train']['k_shot'],
                                        n_episodes=self.config['sampler']['train']['episodes'])
         self.support_dataloader = DataLoader(dataset=self.support_dataset,
                                              batch_sampler=self.support_sampler)
@@ -44,10 +43,9 @@ class FewshotTrainer:
                                           transforms.ToTensor()
                                       ]))
         self.query_sampler = Sampler(labels=self.query_dataset.label,
-                                     n_way=self.config['sampler']['valid']['n_way'],
-                                     k_shot=self.config['sampler']['valid']['k_shot'],
-                                     k_query=self.config['sampler']['valid']['k_query'],
-                                     n_episodes=self.config['sampler']['valid']['episodes'])
+                                     n_way=self.config['sampler']['train']['n_way'],
+                                     k_samples=self.config['sampler']['train']['k_query'],
+                                     n_episodes=self.config['sampler']['train']['episodes'])
         self.query_dataloader = DataLoader(dataset=self.query_dataset,
                                            batch_sampler=self.query_sampler)
 
