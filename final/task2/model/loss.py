@@ -1,4 +1,5 @@
 import torch.nn as nn
+# TODO: loss function implementation
 
 
 class ProtoLoss(nn.Module):
@@ -9,4 +10,5 @@ class ProtoLoss(nn.Module):
         pass
 
     def forward(self, input, target):
-        return self.__protoloss(input, target)
+        return 0
+        #return self.__protoloss(input, target)

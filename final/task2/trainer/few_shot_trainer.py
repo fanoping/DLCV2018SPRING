@@ -3,9 +3,12 @@ from utils.sampler import Sampler
 from model.protonet import Protonet
 from model.loss import ProtoLoss
 import torchvision.transforms as transforms
+from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
+import sys
+
 
 
 class FewshotTrainer:
@@ -16,19 +19,20 @@ class FewshotTrainer:
         self.__load()
         self.__build_model()
 
+        self.loss_list, self.acc_list = [], []
+
     def __load(self):
         # train
         self.train_dataset = Cifar100(config=self.config,
                                       mode='train',
                                       transform=transforms.Compose([
-                                          transforms.Normalize(mean=(0.5071, 0.4867, 0.4408),
-                                                               std=(0.2675, 0.2565, 0.2761))
+                                          transforms.ToTensor()
                                       ]))
         self.train_sampler = Sampler(labels=self.train_dataset.label,
                                      n_way=self.config['sampler']['train']['n_way'],
                                      k_shot=self.config['sampler']['train']['k_shot'],
                                      k_query=self.config['sampler']['train']['k_query'],
-                                     iterations=self.config['sampler']['iterations'])
+                                     n_episodes=self.config['sampler']['train']['episodes'])
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                            batch_sampler=self.train_sampler)
 
@@ -36,14 +40,13 @@ class FewshotTrainer:
         self.valid_dataset = Cifar100(config=self.config,
                                       mode='valid',
                                       transform=transforms.Compose([
-                                          transforms.Normalize(mean=(0.5071, 0.4867, 0.4408),
-                                                               std=(0.2675, 0.2565, 0.2761))
+                                          transforms.ToTensor()
                                       ]))
         self.valid_sampler = Sampler(labels=self.valid_dataset.label,
                                      n_way=self.config['sampler']['valid']['n_way'],
                                      k_shot=self.config['sampler']['valid']['k_shot'],
                                      k_query=self.config['sampler']['valid']['k_query'],
-                                     iterations=self.config['sampler']['iterations'])
+                                     n_episodes=self.config['sampler']['valid']['episodes'])
         self.valid_dataloader = DataLoader(dataset=self.valid_dataset,
                                            batch_sampler=self.valid_sampler)
 
@@ -59,9 +62,36 @@ class FewshotTrainer:
         for epoch in range(self.config['epochs']):
             self.model.train()
             self.scheduler.step(epoch=epoch)
-            train_iter = iter(self.train_dataloader)
-            for a in train_iter:
-                print(a)
+            total_loss, total_acc = 0, 0
+            for episode, (image, label) in enumerate(self.train_dataloader):
+                image = Variable(image).cuda() if self.with_cuda else Variable(image)
+                label = Variable(label).cuda() if self.with_cuda else Variable(label)
+                print(image.size())
+
+                output = self.model(image)
+
+                self.optimizer.zero_grad()
+                loss = self.criterion(output, label)
+                loss.backward()
+                self.optimizer.step()
+
+                total_loss += loss.data[0]
+
+                print('Epoch: {}/{} [Episode: {}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+                        epoch,
+                        self.config['epochs'],
+                        episode,
+                        len(self.train_dataloader),
+                        100.0 * episode / len(self.train_dataloader),
+                        loss.data[0]
+                ), end='\r')
+                sys.stdout.write('\033[K')
+
+            ave_loss = total_loss / len(self.train_dataloader)
+            print("Epoch: {}/{} Loss: {:.6f} Acc: {:.6f}".format(epoch,
+                                                                 self.config['epochs'],
+                                                                 total_loss / len(self.train_dataloader),
+                                                                 total_acc / len(self.train_dataloader)))
 
     def __save_checkpoint(self):
         pass

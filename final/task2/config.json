@@ -4,7 +4,7 @@
     "save_dir": "checkpoints/5-shot",
     "sampler": {
         "train": {
-            "n_way": 60,
+            "n_way": 20,
             "k_shot": 5,
             "k_query": 5,
             "episodes": 100
