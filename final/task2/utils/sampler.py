@@ -14,15 +14,15 @@ class Sampler(object):
 
     def __iter__(self):
         for i in range(self.n_episodes):
-            idx = 0
             all_idx = []
             classes, counts = np.unique(self.labels, return_counts=True)
             permutation = np.random.permutation(classes.shape[0])[:self.n_way]
-            classes, counts = classes[permutation], counts[permutation]
+            sample_classes, sample_counts = classes[permutation], counts[permutation]
 
-            for count in counts:
-                class_idx = np.random.choice(count, self.k_shot + self.k_query, replace=False)
-                class_idx += idx
-                idx += count
+            for sample_class, count in zip(sample_classes, sample_counts):
+                class_idx = np.random.choice(count, self.k_shot, replace=False)
+                start_idx = self.labels.index(sample_class)
+                class_idx += start_idx
                 all_idx.extend(class_idx)
-            yield all_idx
+
+            yield [1]

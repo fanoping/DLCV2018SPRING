@@ -22,33 +22,34 @@ class FewshotTrainer:
         self.loss_list, self.acc_list = [], []
 
     def __load(self):
-        # train
-        self.train_dataset = Cifar100(config=self.config,
-                                      mode='train',
+        # support
+        self.support_dataset = Cifar100(config=self.config,
+                                        file='base',
+                                        mode='support',
+                                        transform=transforms.Compose([
+                                            transforms.ToTensor()
+                                        ]))
+        self.support_sampler = Sampler(labels=self.support_dataset.label,
+                                       n_way=self.config['sampler']['train']['n_way'],
+                                       k_shot=self.config['sampler']['train']['k_shot'],
+                                       k_query=self.config['sampler']['train']['k_query'],
+                                       n_episodes=self.config['sampler']['train']['episodes'])
+        self.support_dataloader = DataLoader(dataset=self.support_dataset,
+                                             batch_sampler=self.support_sampler)
+        # query
+        self.query_dataset = Cifar100(config=self.config,
+                                      file='base',
+                                      mode='query',
                                       transform=transforms.Compose([
                                           transforms.ToTensor()
                                       ]))
-        self.train_sampler = Sampler(labels=self.train_dataset.label,
-                                     n_way=self.config['sampler']['train']['n_way'],
-                                     k_shot=self.config['sampler']['train']['k_shot'],
-                                     k_query=self.config['sampler']['train']['k_query'],
-                                     n_episodes=self.config['sampler']['train']['episodes'])
-        self.train_dataloader = DataLoader(dataset=self.train_dataset,
-                                           batch_sampler=self.train_sampler)
-
-        # valid
-        self.valid_dataset = Cifar100(config=self.config,
-                                      mode='valid',
-                                      transform=transforms.Compose([
-                                          transforms.ToTensor()
-                                      ]))
-        self.valid_sampler = Sampler(labels=self.valid_dataset.label,
+        self.query_sampler = Sampler(labels=self.query_dataset.label,
                                      n_way=self.config['sampler']['valid']['n_way'],
                                      k_shot=self.config['sampler']['valid']['k_shot'],
                                      k_query=self.config['sampler']['valid']['k_query'],
                                      n_episodes=self.config['sampler']['valid']['episodes'])
-        self.valid_dataloader = DataLoader(dataset=self.valid_dataset,
-                                           batch_sampler=self.valid_sampler)
+        self.query_dataloader = DataLoader(dataset=self.query_dataset,
+                                           batch_sampler=self.query_sampler)
 
     def __build_model(self):
         self.model = Protonet(self.config).cuda() if self.with_cuda else Protonet(self.config)
@@ -63,15 +64,18 @@ class FewshotTrainer:
             self.model.train()
             self.scheduler.step(epoch=epoch)
             total_loss, total_acc = 0, 0
-            for episode, (image, label) in enumerate(self.train_dataloader):
-                image = Variable(image).cuda() if self.with_cuda else Variable(image)
-                label = Variable(label).cuda() if self.with_cuda else Variable(label)
-                print(image.size())
+            for episode, ((support_image, support_label), (query_image, query_label)) in \
+                         enumerate(zip(self.support_dataloader, self.query_dataloader)):
+                support_image = Variable(support_image).cuda() if self.with_cuda else Variable(support_image)
+                support_label = Variable(support_label).cuda() if self.with_cuda else Variable(support_label)
+                query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
+                query_label = Variable(query_label).cuda() if self.with_cuda else Variable(query_label)
 
-                output = self.model(image)
+                support_output = self.model(support_image)
+                query_image = self.model(query_image)
 
                 self.optimizer.zero_grad()
-                loss = self.criterion(output, label)
+                loss = self.criterion(support_output, support_label, query_image, query_label)
                 loss.backward()
                 self.optimizer.step()
 
@@ -81,17 +85,17 @@ class FewshotTrainer:
                         epoch,
                         self.config['epochs'],
                         episode,
-                        len(self.train_dataloader),
-                        100.0 * episode / len(self.train_dataloader),
+                        len(self.support_dataloader),
+                        100.0 * episode / len(self.support_dataloader),
                         loss.data[0]
                 ), end='\r')
                 sys.stdout.write('\033[K')
 
-            ave_loss = total_loss / len(self.train_dataloader)
+            ave_loss = total_loss / len(self.support_dataloader)
             print("Epoch: {}/{} Loss: {:.6f} Acc: {:.6f}".format(epoch,
                                                                  self.config['epochs'],
-                                                                 total_loss / len(self.train_dataloader),
-                                                                 total_acc / len(self.train_dataloader)))
+                                                                 total_loss / len(self.support_dataloader),
+                                                                 total_acc / len(self.support_dataloader)))
 
     def __save_checkpoint(self):
         pass
