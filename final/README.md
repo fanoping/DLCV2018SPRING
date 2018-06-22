@@ -39,7 +39,7 @@
   
       * **Usage**
         
-        check configuration in `config.json` before training
+        `cd task2` first, check configuration in `config.json` before training
         
         * Training
             ```
