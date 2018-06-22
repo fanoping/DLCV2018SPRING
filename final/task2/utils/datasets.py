@@ -1,6 +1,5 @@
 from torch.utils.data import Dataset
 from scipy.misc import imread
-import random
 import os
 # TODO: novel set random sample 1/5/10 images
 

@@ -1,7 +1,11 @@
 {
+    "structure_name": "5-shot",
     "train_dir": "datasets/task2-dataset",
     "test_dir": "datasets/test",
-    "save_dir": "checkpoints/5-shot",
+    "save": {
+        "dir": "5-shot",
+        "save_freq": 10
+    },
     "sampler": {
         "train": {
             "n_way": 20,
@@ -22,11 +26,12 @@
         "feature_size": 64
     },
     "optimizer": {
-        "lr": 0.001,
+        "lr": 0.0001,
         "scheduler": {
             "gamma": 0.5,
-            "step_size": 100
+            "step_size": 200
         }
     },
-    "cuda": false
+    "metric": "accuracy",
+    "cuda": true
 }

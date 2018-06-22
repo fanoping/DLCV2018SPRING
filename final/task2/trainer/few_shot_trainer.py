@@ -7,9 +7,10 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
+import torch
 import sys
+import os
 # TODO: validation (optional)
-# TODO: save checkpoint
 
 
 class FewshotTrainer:
@@ -21,6 +22,8 @@ class FewshotTrainer:
         self.__build_model()
 
         self.loss_list, self.acc_list = [], []
+        self.min_loss = float('inf')
+        self.max_acc = 0
 
     def __load(self):
         # support
@@ -59,12 +62,12 @@ class FewshotTrainer:
                                 step_size=self.config['optimizer']['scheduler']['step_size'])
 
     def train(self):
-        for epoch in range(self.config['epochs']):
+        for epoch in range(1, self.config['epochs'] + 1):
             self.model.train()
             self.scheduler.step(epoch=epoch)
             total_loss, total_acc = 0, 0
             for episode, ((support_image, support_label), (query_image, query_label)) in \
-                         enumerate(zip(self.support_dataloader, self.query_dataloader)):
+                    enumerate(zip(self.support_dataloader, self.query_dataloader)):
                 support_image = Variable(support_image).cuda() if self.with_cuda else Variable(support_image)
                 support_label = Variable(support_label).cuda() if self.with_cuda else Variable(support_label)
                 query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
@@ -78,16 +81,16 @@ class FewshotTrainer:
                 loss.backward()
                 self.optimizer.step()
 
-                total_loss += loss.data[0]
+                total_loss += loss.data.item()
                 total_acc += acc
 
-                print('Epoch: {}/{} [Episode: {}/{} ({:.0f}%)] Loss: {:.6f} Acc: {:.6f}'.format(
+                print('Epoch: {}/{} [Episode: {}/{} ({:.0f}%)] Loss: {:.6f} Acc: {:.3f}'.format(
                         epoch,
                         self.config['epochs'],
-                        episode,
+                        episode + 1,
                         len(self.support_dataloader),
-                        100.0 * episode / len(self.support_dataloader),
-                        loss.data[0],
+                        100.0 * (episode+1) / len(self.support_dataloader),
+                        loss.data.item(),
                         acc
                 ), end='\r')
                 sys.stdout.write('\033[K')
@@ -98,10 +101,41 @@ class FewshotTrainer:
             self.loss_list.append(ave_loss)
             self.acc_list.append(ave_acc)
 
-            print("Epoch: {}/{} Loss: {:.6f} Acc: {:.6f}".format(epoch,
+            print("Epoch: {}/{} Loss: {:.6f} Acc: {:.4f}".format(epoch,
                                                                  self.config['epochs'],
                                                                  total_loss / len(self.support_dataloader),
                                                                  total_acc / len(self.support_dataloader)))
 
-    def __save_checkpoint(self):
-        pass
+            assert(self.config['metric'] == 'accuracy' or self.config['metric'] == 'loss')
+            metric = ave_acc if self.config['metric'] == 'accuracy' else ave_loss
+            self.__save_checkpoint(epoch, metric)
+
+    def __save_checkpoint(self, epoch, metric):
+        state = {
+            'model': self.config['structure_name'],
+            'epoch': epoch,
+            'state_dict': self.model.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'loss': self.loss_list,
+            'accuracy': self.acc_list,
+        }
+
+        filepath = os.path.join("checkpoints", self.config['save']['dir'])
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+
+        filename = os.path.join(filepath, "epoch{}_checkpoint.pth.tar".format(epoch))
+        if epoch % self.config['save']['save_freq'] == 0:
+            torch.save(state, f=filename)
+
+        best_filename = os.path.join(filepath, "best_checkpoint.pth.tar")
+        if self.config['metric'] == 'accuracy':
+            if self.max_acc < metric:
+                torch.save(state, f=best_filename)
+                print("Saving Epoch: {}, Updating acc {:.4f} to {:.4f}".format(epoch, self.max_acc, metric))
+                self.max_acc = metric
+        else:
+            if self.min_loss > metric:
+                torch.save(state, f=best_filename)
+                print("Saving Epoch: {}, Updating loss {:.6f} to {:.6f}".format(epoch, self.min_loss, metric))
+                self.min_loss = metric
