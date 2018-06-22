@@ -37,9 +37,9 @@
         
    * **One-shot / Few-shot Learning**
       
-      Alternative implementation of Prototypical Networks for Few Shot Learning in PyTorch 0.4.0
+      Alternative implementation of **Prototypical Networks for Few Shot Learning** in PyTorch 0.4.0
       
-      Original paper: **Prototypical Networks for Few-shot Learning** ([paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf), [code](https://github.com/jakesnell/prototypical-networks))
+      Original paper: **Prototypical Networks for Few-shot Learning**, Snell et al., NIPS'17 ([paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf), [code](https://github.com/jakesnell/prototypical-networks))
       
       * **Usage**
         
@@ -62,3 +62,7 @@
               year={2017}
              }
         ```
+      
+      Alternative implementation of **Learning to Compare: Relation Network for Few-Shot Learning** in PyTorch 0.4.0
+      
+      Original paper: **Learning to Compare: Relation Network for Few-Shot Learning**, Sung et al., CVPR'18 ([paper](https://arxiv.org/pdf/1711.06025.pdf), [code](https://github.com/floodsung/LearningToCompare_FSL))
