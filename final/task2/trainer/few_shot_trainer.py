@@ -7,6 +7,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
+import json
 import torch
 import sys
 import os
@@ -123,6 +124,9 @@ class FewshotTrainer:
         filepath = os.path.join("checkpoints", self.config['save']['dir'])
         if not os.path.exists(filepath):
             os.makedirs(filepath)
+
+        with open(os.path.join(filepath, 'config.json'), 'w') as f:
+            json.dump(self.config, f)
 
         filename = os.path.join(filepath, "epoch{}_checkpoint.pth.tar".format(epoch))
         if epoch % self.config['save']['save_freq'] == 0:

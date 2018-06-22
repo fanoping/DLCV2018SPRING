@@ -38,6 +38,7 @@
    * **One-shot / Few-shot Learning**
   
       * **Usage**
+        
         check configuration in `config.json` before training
         
         * Training
