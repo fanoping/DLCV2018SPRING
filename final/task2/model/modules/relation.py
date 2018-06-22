@@ -4,24 +4,24 @@ import math
 
 
 class Relation(nn.Module):
-    def __init__(self):
+    def __init__(self, feature_size, hidden_size, relation_dim):
         super(Relation, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.Conv2d(64*2, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64, momentum=1, affine=True),
+            nn.Conv2d(feature_size*2, hidden_size, kernel_size=3, padding=1),
+            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64, momentum=1, affine=True),
+            nn.Conv2d(hidden_size, hidden_size, kernel_size=3, padding=1),
+            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
         self.fc = nn.Sequential(
-            nn.Linear(64, 10),
+            nn.Linear(hidden_size, relation_dim),
             nn.ReLU(inplace=True),
-            nn.Linear(10, 1),
+            nn.Linear(relation_dim, 1),
             nn.Sigmoid()
         )
 
@@ -41,14 +41,13 @@ class Relation(nn.Module):
     def forward(self, feature):
         out = self.conv1(feature)
         out = self.conv2(out)
-        print(out)
         out = out.view(out.size(0), -1)
         out = self.fc(out)
         return out
 
 
 if __name__ == '__main__':
-    test = Relation()
+    test = Relation(64, 64)
     import torch
     from torch.autograd import Variable
     a = Variable(torch.ones((1, 128, 6, 6)))

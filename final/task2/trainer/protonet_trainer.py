@@ -7,11 +7,10 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
-import json
 import torch
+import json
 import sys
 import os
-# TODO: validation (optional)
 
 
 class ProtonetTrainer:
@@ -74,10 +73,10 @@ class ProtonetTrainer:
                 query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
                 query_label = Variable(query_label).cuda() if self.with_cuda else Variable(query_label)
 
+                self.model.zero_grad()
                 support_output = self.model(support_image)
                 query_output = self.model(query_image)
 
-                self.optimizer.zero_grad()
                 loss, acc = self.criterion(support_output, support_label, query_output, query_label)
                 loss.backward()
                 self.optimizer.step()

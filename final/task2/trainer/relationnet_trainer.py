@@ -7,11 +7,10 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
-import json
 import torch
+import json
 import sys
 import os
-# TODO: validation (optional)
 
 
 class RelationnetTrainer:
@@ -74,21 +73,23 @@ class RelationnetTrainer:
                 query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
                 query_label = Variable(query_label).cuda() if self.with_cuda else Variable(query_label)
 
-                """
+                self.model.zero_grad()
                 output = self.model(support_image, query_image)
+                one_hot_labels = Variable(torch.zeros(
+                        self.config['sampler']['train']['k_query'] * self.config['sampler']['train']['n_way'],
+                        self.config['sampler']['train']['n_way']
+                ).scatter_(1, query_label.view(-1, 1), 1))
+                one_hot_labels = one_hot_labels.cuda() if self.with_cuda else one_hot_labels
 
-                one_hot_labels = Variable(torch.zeros(10 * 20, 20).scatter_(1, query_label.view(-1, 1), 1)).cuda()
-                """
-
-
-                self.optimizer.zero_grad()
                 loss = self.criterion(output, one_hot_labels)
                 loss.backward()
                 self.optimizer.step()
 
+                _, result = torch.max(output, dim=1)
+                acc = torch.eq(result.cpu(), query_label).float().mean()
+
                 total_loss += loss.data.item()
                 total_acc += acc
-
 
                 print('Epoch: {}/{} [Episode: {}/{} ({:.0f}%)] Loss: {:.6f} Acc: {:.3f}'.format(
                         epoch,

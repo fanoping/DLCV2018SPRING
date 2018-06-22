@@ -10,26 +10,27 @@
         "train": {
             "n_way": 20,
             "k_shot": 5,
-            "k_query": 5,
-            "episodes": 500
+            "k_query": 15,
+            "episodes": 1000
         },
         "test": {
             "n_way": 20,
             "k_shot": 5,
             "k_query": 15,
-            "episodes": 100
+            "episodes": 500
         }
     },
-    "epochs": 10000,
+    "epochs": 500,
     "model": {
         "hidden_size": 64,
-        "feature_size": 64
+        "feature_size": 64,
+        "relation_dim": 8
     },
     "optimizer": {
         "lr": 0.001,
         "scheduler": {
             "gamma": 0.5,
-            "step_size": 200
+            "step_size": 100
         }
     },
     "metric": "accuracy",

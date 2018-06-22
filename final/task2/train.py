@@ -10,6 +10,6 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Task 2")
-    parser.add_argument('--config', default='configs/protonet_config.json')
+    parser = argparse.ArgumentParser("One/Few Shot Learning Implementation")
+    parser.add_argument('--config', default='configs/relationnet_config.json')
     main(parser.parse_args())

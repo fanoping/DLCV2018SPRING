@@ -1,4 +1,5 @@
 import numpy as np
+# TODO: sampler is wrong, need to be fixed
 
 
 class Sampler(object):
