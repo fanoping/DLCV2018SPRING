@@ -14,6 +14,7 @@ class ProtoLoss(nn.Module):
     def forward(self, support_image, support_label, query_image, query_label):
         """
         calculating euclidean distance for query image
+        Reference: https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/few_shot.py
         :param support_image: (n_way x k_shot) x 64
         :param support_label: (n_way x k_shot),
         :param query_image: (n_way x k_query) x 64
@@ -53,7 +54,7 @@ class ProtoLoss(nn.Module):
     def __euclidean_dist(self, x, y):
         """
         Compute euclidean distance between two tensors
-        code from: https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/utils.py
+        Reference: https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/utils.py
         """
         # x: N x D
         # y: M x D

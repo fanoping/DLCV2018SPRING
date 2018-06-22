@@ -18,8 +18,12 @@
   * numpy 1.14.2
 
 ## Dataset
-   * For task 1, FashionMNIST with selected data (2000 training samples with labels / 10000 testing samples with no labels)
-   * For task 2, Cifar-100
+   * For task 1, FashionMNIST with selected data
+       * 2000 training samples with labels 
+       * 10000 testing samples with no labels
+   * For task 2, Cifar-100 
+       * 80 base classes with 500/100 training/testing samples
+       * 20 novel classes with 1/5/10 training samples
 
 
 ## Implementation
@@ -28,5 +32,17 @@
       * **Usage**
             
         * Training
+            
+        * Visualize / Inference
+        
+   * **One-shot / Few-shot Learning**
+  
+      * **Usage**
+        check configuration in `config.json` before training
+        
+        * Training
+            ```
+                python3 train.py --config config.json
+            ```
             
         * Visualize / Inference
