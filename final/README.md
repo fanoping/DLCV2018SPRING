@@ -39,7 +39,7 @@
       
       Alternative implementation of Prototypical Networks for Few Shot Learning in PyTorch 0.4.0
       
-      Original paper: **Prototypical Networks for Few-shot Learning**([paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf), [code](https://github.com/jakesnell/prototypical-networks))
+      Original paper: **Prototypical Networks for Few-shot Learning** ([paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf), [code](https://github.com/jakesnell/prototypical-networks))
       
       * **Usage**
         

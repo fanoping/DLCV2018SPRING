@@ -126,7 +126,7 @@ class FewshotTrainer:
             os.makedirs(filepath)
 
         with open(os.path.join(filepath, 'config.json'), 'w') as f:
-            json.dump(self.config, f)
+            json.dump(self.config, f, indent=4, sort_keys=False)
 
         filename = os.path.join(filepath, "epoch{}_checkpoint.pth.tar".format(epoch))
         if epoch % self.config['save']['save_freq'] == 0:
