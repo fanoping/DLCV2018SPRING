@@ -8,7 +8,8 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
 import sys
-
+# TODO: validation (optional)
+# TODO: save checkpoint
 
 
 class FewshotTrainer:
@@ -51,7 +52,7 @@ class FewshotTrainer:
 
     def __build_model(self):
         self.model = Protonet(self.config).cuda() if self.with_cuda else Protonet(self.config)
-        self.criterion = ProtoLoss().cuda() if self.with_cuda else ProtoLoss()
+        self.criterion = ProtoLoss(self.config).cuda() if self.with_cuda else ProtoLoss(self.config)
         self.optimizer = Adam(self.model.parameters(), lr=self.config['optimizer']['lr'])
         self.scheduler = StepLR(optimizer=self.optimizer,
                                 gamma=self.config['optimizer']['scheduler']['gamma'],
@@ -70,26 +71,33 @@ class FewshotTrainer:
                 query_label = Variable(query_label).cuda() if self.with_cuda else Variable(query_label)
 
                 support_output = self.model(support_image)
-                query_image = self.model(query_image)
+                query_output = self.model(query_image)
 
                 self.optimizer.zero_grad()
-                loss = self.criterion(support_output, support_label, query_image, query_label)
+                loss, acc = self.criterion(support_output, support_label, query_output, query_label)
                 loss.backward()
                 self.optimizer.step()
 
                 total_loss += loss.data[0]
+                total_acc += acc
 
-                print('Epoch: {}/{} [Episode: {}/{} ({:.0f}%)] Loss: {:.6f}'.format(
+                print('Epoch: {}/{} [Episode: {}/{} ({:.0f}%)] Loss: {:.6f} Acc: {:.6f}'.format(
                         epoch,
                         self.config['epochs'],
                         episode,
                         len(self.support_dataloader),
                         100.0 * episode / len(self.support_dataloader),
-                        loss.data[0]
+                        loss.data[0],
+                        acc
                 ), end='\r')
                 sys.stdout.write('\033[K')
 
             ave_loss = total_loss / len(self.support_dataloader)
+            ave_acc = total_acc / len(self.support_dataloader)
+
+            self.loss_list.append(ave_loss)
+            self.acc_list.append(ave_acc)
+
             print("Epoch: {}/{} Loss: {:.6f} Acc: {:.6f}".format(epoch,
                                                                  self.config['epochs'],
                                                                  total_loss / len(self.support_dataloader),
