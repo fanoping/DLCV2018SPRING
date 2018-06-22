@@ -43,11 +43,11 @@
       
       * **Usage**
         
-        `cd task2` first, check configuration in `config.json` before training
+        `cd task2` first, check configuration in `config/protonet_config.json` before training
         
         * Training
             ```
-                python3 train.py --config config.json
+                python3 train.py --config config/protonet_config.json
             ```
             
         * Visualize / Inference
