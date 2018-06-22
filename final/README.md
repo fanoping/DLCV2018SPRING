@@ -66,3 +66,25 @@
       Alternative implementation of **Learning to Compare: Relation Network for Few-Shot Learning** in PyTorch 0.4.0
       
       Reference: **Learning to Compare: Relation Network for Few-Shot Learning**, Sung et al., CVPR'18 ([paper](https://arxiv.org/pdf/1711.06025.pdf), [code](https://github.com/floodsung/LearningToCompare_FSL))
+   
+      * **Usage**
+        
+        `cd task2` first, check configuration in `config/relationnet_config.json` before training
+        
+        * Training
+            ```
+                python3 train.py --config config/relationnet_config.json
+            ```
+            
+        * Visualize / Inference
+
+      * **Citation**
+        
+        ```
+            @inproceedings{sung2018learning,
+              title={Learning to Compare: Relation Network for Few-Shot Learning},
+              author={Sung, Flood and Yang, Yongxin and Zhang, Li and Xiang, Tao and Torr, Philip HS and Hospedales, Timothy M},
+              booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+              year={2018}
+             }
+        ```
