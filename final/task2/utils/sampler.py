@@ -12,7 +12,7 @@ class Sampler(object):
         return self.n_episodes
 
     def __iter__(self):
-        for i in range(self.n_episodes):
+        for _ in range(self.n_episodes):
             all_idx = []
             classes, counts = np.unique(self.labels, return_counts=True)
             permutation = np.random.permutation(classes.shape[0])[:self.n_way]

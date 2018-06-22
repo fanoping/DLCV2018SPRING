@@ -1,9 +1,9 @@
 {
-    "structure_name": "5-shot",
+    "structure": "Protonet",
     "train_dir": "datasets/task2-dataset",
     "test_dir": "datasets/test",
     "save": {
-        "dir": "5-shot",
+        "dir": "protonet_5_shot-v01",
         "save_freq": 10
     },
     "sampler": {
@@ -11,13 +11,13 @@
             "n_way": 20,
             "k_shot": 5,
             "k_query": 5,
-            "episodes": 100
+            "episodes": 500
         },
         "test": {
             "n_way": 20,
             "k_shot": 5,
             "k_query": 15,
-            "episodes": 500
+            "episodes": 100
         }
     },
     "epochs": 10000,

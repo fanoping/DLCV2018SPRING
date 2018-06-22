@@ -14,7 +14,7 @@ import os
 # TODO: validation (optional)
 
 
-class FewshotTrainer:
+class ProtonetTrainer:
     def __init__(self, config):
         self.config = config
         self.with_cuda = config['cuda']
@@ -113,7 +113,7 @@ class FewshotTrainer:
 
     def __save_checkpoint(self, epoch, metric):
         state = {
-            'model': self.config['structure_name'],
+            'structure': self.config['structure'],
             'epoch': epoch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),

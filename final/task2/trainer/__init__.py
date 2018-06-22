@@ -1,1 +1,1 @@
-from .few_shot_trainer import FewshotTrainer
+from .protonet_trainer import ProtonetTrainer

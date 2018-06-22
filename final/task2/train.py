@@ -1,14 +1,15 @@
-from trainer import FewshotTrainer
+from trainer import *
 import argparse
 import json
 
 
 def main(args):
-    trainer = FewshotTrainer(json.load(open(args.config)))
+    config = json.load(open(args.config))
+    trainer = eval(config['structure'].title()+'Trainer')(config)
     trainer.train()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Task 2")
-    parser.add_argument('--config', default='config.json')
+    parser.add_argument('--config', default='configs/protonet_config.json')
     main(parser.parse_args())
