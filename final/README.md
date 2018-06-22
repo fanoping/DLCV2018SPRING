@@ -36,7 +36,11 @@
         * Visualize / Inference
         
    * **One-shot / Few-shot Learning**
-  
+      
+      Alternative implementation of Prototypical Networks for Few Shot Learning in PyTorch 0.4.0
+      
+      Original paper: **Prototypical Networks for Few-shot Learning**([paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf), [code](https://github.com/jakesnell/prototypical-networks))
+      
       * **Usage**
         
         `cd task2` first, check configuration in `config.json` before training
@@ -47,3 +51,14 @@
             ```
             
         * Visualize / Inference
+
+      * **Citation**
+        
+        ```
+            @inproceedings{snell2017prototypical,
+              title={Prototypical Networks for Few-shot Learning},
+              author={Snell, Jake and Swersky, Kevin and Zemel, Richard},
+              booktitle={Advances in Neural Information Processing Systems},
+              year={2017}
+             }
+        ```
