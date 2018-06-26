@@ -34,5 +34,5 @@
         }
     },
     "metric": "accuracy",
-    "cuda": true
+    "cuda": false
 }
