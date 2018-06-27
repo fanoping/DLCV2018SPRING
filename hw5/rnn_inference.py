@@ -33,7 +33,7 @@ def main(args):
     # dataset
     valid_dataset = TrimmedVideo(args, 'eval')
     valid_data_loader = DataLoader(dataset=valid_dataset,
-                                   batch_size=len(valid_dataset),
+                                   batch_size=1,
                                    collate_fn=valid_dataset.rnn_collate_fn,
                                    shuffle=False)
 
@@ -50,18 +50,19 @@ def main(args):
             result.append(index)
             ground_truth.append(label)
 
-    result = result[0].cpu().data.numpy()
-    ground_truth = ground_truth[0].numpy()
+    result = torch.stack(result).cpu().data.numpy()
+    ground_truth = torch.stack(ground_truth).numpy()
 
     accuracy = np.mean(result == ground_truth)
     print("Model accuracy:", accuracy)
 
     filename = os.path.join(output_file, 'p2_result.txt')
     with open(filename, 'w') as f:
-        result = [str(result[idx]) if idx == len(result)-1 else str(result[idx])+'\n' for idx in range(len(result))]
+        result = [str(result[idx][0]) if idx == len(result)-1 else str(result[idx][0])+'\n' for idx in range(len(result))]
         f.writelines(result)
 
     # 2-2
+    """
     print("Saving loss figure......")
     loss_list = checkpoint['loss']
     val_loss_list = checkpoint['val_loss']
@@ -145,7 +146,7 @@ def main(args):
             plt.legend(loc="best")
             filename = os.path.join(output_file, 'fig2_5.jpg')
             plt.savefig(filename)
-
+    """
     print("Done!")
 
 

@@ -1,0 +1,33 @@
+{
+    "structure": "Relationnet",
+    "base_dir": "datasets/task2-dataset/base",
+    "novel_dir": "datasets/task2-dataset/novel",
+    "test_dir": "datasets/test",
+    "save": {
+        "dir": "relation_5_shot-v01",
+        "save_freq": 2
+    },
+    "train": {
+        "sample": {
+            "n_way": 20,
+            "k_shot": 5,
+            "n_query": 5
+        },
+        "episode": 500000
+    },
+    "model": {
+        "hidden_size": 64,
+        "feature_size": 64,
+        "relation_dim": 8
+    },
+    "optimizer": {
+        "lr": 0.001,
+        "scheduler": {
+            "gamma": 0.5,
+            "step_size": 100000
+        }
+    },
+    "log_step": 100,
+    "metric": "accuracy",
+    "cuda": true
+}
