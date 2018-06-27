@@ -28,6 +28,7 @@
         }
     },
     "log_step": 100,
+    "eval_step": 1000,
     "metric": "accuracy",
     "cuda": true
 }

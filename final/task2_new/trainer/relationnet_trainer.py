@@ -1,5 +1,6 @@
 from datasets.dataset import Cifar100
 from model.relationnet import Relationnet
+from utils import mkdir
 from torch.utils.data import DataLoader
 from torch.nn import MSELoss
 import torchvision.transforms as transforms
@@ -8,6 +9,7 @@ from torch.optim.lr_scheduler import StepLR
 from torch.optim import Adam
 import torch
 import json
+import csv
 import sys
 import os
 
@@ -26,11 +28,17 @@ class RelationnetTrainer:
 
     def __load(self):
         # train
-        self.dataset = Cifar100(config=self.config,
-                                mode='train',
-                                transform=transforms.Compose([
-                                    transforms.ToTensor()
-                                ]))
+        self.train_dataset = Cifar100(config=self.config,
+                                      mode='train',
+                                      transform=transforms.Compose([
+                                          transforms.ToTensor()
+                                      ]))
+        # test
+        self.test_dataset = Cifar100(config=self.config,
+                                     mode='eval',
+                                     transform=transforms.Compose([
+                                         transforms.ToTensor()
+                                     ]))
 
     def __build_model(self):
         self.model = Relationnet(self.config).cuda() if self.with_cuda else Relationnet(self.config)
@@ -41,9 +49,9 @@ class RelationnetTrainer:
                                 step_size=self.config['optimizer']['scheduler']['step_size'])
 
     def train(self):
-        self.model.train()
         total_loss, total_acc = 0, 0
-        for episode, (support_image, query_image, label) in enumerate(self.dataset):
+        for episode, (support_image, query_image, label) in enumerate(self.train_dataset):
+            self.model.train()
             self.scheduler.step(epoch=episode)
             support_image = Variable(support_image).cuda() if self.with_cuda else Variable(support_image)
             query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
@@ -69,8 +77,8 @@ class RelationnetTrainer:
             total_acc += acc
             print('[Episode: {}/{} ({:.3f}%)] Loss: {:.6f} Acc: {:.3f}'.format(
                 episode + 1,
-                len(self.dataset),
-                100.0 * (episode + 1) / len(self.dataset),
+                len(self.train_dataset),
+                100.0 * (episode + 1) / len(self.train_dataset),
                 loss.data.item(),
                 acc
             ), end='\r')
@@ -79,8 +87,8 @@ class RelationnetTrainer:
             if (episode + 1) % self.config['log_step'] == 0:
                 print('[Episode: {}/{} ({:.3f}%)] Loss: {:.6f} Acc: {:.3f}'.format(
                     episode + 1,
-                    len(self.dataset),
-                    100.0 * (episode + 1) / len(self.dataset),
+                    len(self.train_dataset),
+                    100.0 * (episode + 1) / len(self.train_dataset),
                     loss.data.item(),
                     acc
                 ))
@@ -92,11 +100,38 @@ class RelationnetTrainer:
             metric = acc if self.config['metric'] == 'accuracy' else loss
             self.__save_checkpoint(episode + 1, metric)
 
+            if (episode + 1) % self.config['eval_freq'] == 0:
+                self.eval(episode)
 
-        ave_loss = total_loss / len(self.dataset)
-        ave_acc = total_acc / len(self.dataset)
+        ave_loss = total_loss / len(self.train_dataset)
+        ave_acc = total_acc / len(self.train_dataset)
 
         print("Loss: {:.6f} Acc: {:.4f}".format(ave_loss, ave_acc))
+
+    def eval(self, episode=None):
+        print("Evaluation...")
+        with torch.no_grad():
+            self.model.eval()
+            label = self.test_dataset.novel_label
+            results = []
+            for _, (support_image, query_image) in enumerate(self.test_dataset):
+                support_image = Variable(support_image).cuda() if self.with_cuda else Variable(support_image)
+                query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
+
+                output = self.model(support_image, query_image)
+                _, result = torch.max(output, dim=1)
+                results.append(result)
+            results = torch.cat(results, dim=0).data.cpu().numpy().tolist()
+            results = [label[idx] for idx in results]
+
+        mkdir('saved')
+        filename = os.path.join('saved', 'test.csv' if episode == None else 'test_episode{}.csv'.format(episode))
+        with open(filename, 'w') as f:
+            s = csv.writer(f, delimiter=',', lineterminator='\n')
+            s.writerow(["image_id", "predicted_label"])
+            for idx, predict_label in enumerate(results):
+                s.writerow([idx, predict_label])
+        print("Saving inference label csv as {}".format(filename))
 
     def __save_checkpoint(self, episode, metric):
         state = {
