@@ -101,7 +101,7 @@ class RelationnetTrainer:
             self.__save_checkpoint(episode + 1, metric)
 
             if (episode + 1) % self.config['eval_freq'] == 0:
-                self.eval(episode)
+                self.eval(episode+1)
 
         ave_loss = total_loss / len(self.train_dataset)
         ave_acc = total_acc / len(self.train_dataset)
@@ -150,7 +150,7 @@ class RelationnetTrainer:
         with open(os.path.join(filepath, 'config.json'), 'w') as f:
             json.dump(self.config, f, indent=4, sort_keys=False)
 
-        filename = os.path.join(filepath, "epoch{}_checkpoint.pth.tar".format(episode))
+        filename = os.path.join(filepath, "episode{}_checkpoint.pth.tar".format(episode))
         if episode % self.config['save']['save_freq'] == 0:
             torch.save(state, f=filename)
 
@@ -158,10 +158,10 @@ class RelationnetTrainer:
         if self.config['metric'] == 'accuracy':
             if self.max_acc < metric:
                 torch.save(state, f=best_filename)
-                print("Saving Epoch: {}, Updating acc {:.4f} to {:.4f}".format(episode, self.max_acc, metric))
+                print("Saving Episode: {}, Updating acc {:.4f} to {:.4f}".format(episode, self.max_acc, metric))
                 self.max_acc = metric
         else:
             if self.min_loss > metric:
                 torch.save(state, f=best_filename)
-                print("Saving Epoch: {}, Updating loss {:.6f} to {:.6f}".format(episode, self.min_loss, metric))
+                print("Saving Episode: {}, Updating loss {:.6f} to {:.6f}".format(episode, self.min_loss, metric))
                 self.min_loss = metric

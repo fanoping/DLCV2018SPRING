@@ -112,6 +112,7 @@ class Cifar100(object):
             raise StopIteration
 
     def __iter__(self):
+        self.idx = 0
         return self
 
     def __len__(self):
