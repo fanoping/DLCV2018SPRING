@@ -1,1 +1,0 @@
-from .relationnet_trainer import RelationnetTrainer
