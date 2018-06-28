@@ -53,4 +53,3 @@ if __name__ == '__main__':
     import torch
     from torch.autograd import Variable
     a = Variable(torch.ones((1, 128, 6, 6)))
-    out = test(a)

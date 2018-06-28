@@ -5,7 +5,7 @@ import os
 
 
 class Cifar100(object):
-    def __init__(self, config, mode='test', transform=None):
+    def __init__(self, config, mode='train', transform=None):
         super(Cifar100, self).__init__()
         assert(mode == 'train' or mode == 'valid' or mode == 'eval')
         self.idx = 0
@@ -49,12 +49,13 @@ class Cifar100(object):
             for directory in classes_dir:
                 path = os.path.join(directory, 'train')
                 # TODO: random sample, currently take first 5 images from novel class
-                image = read_image(path)[:5]
+                image = read_image(path)
+                image = [image[item] for item in self.config['train']['sample']['novel_index']]
                 _, label = os.path.split(directory)
                 self.train_image[int(label[-2:])] = image
                 self.novel_label.append(int(label[-2:]))
 
-            print(self.novel_label)
+            print("Novel labels:", self.novel_label, "index:")
             # test
             test = self.config['test_dir']
             self.test_set = read_image(test)
@@ -121,7 +122,6 @@ class Cifar100(object):
         else:
             return len(self.test_set) // (self.config['train']['sample']['n_way'] *
                                           self.config['train']['sample']['k_shot'])
-
 
 
 if __name__ == '__main__':

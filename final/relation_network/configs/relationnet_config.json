@@ -11,7 +11,8 @@
         "sample": {
             "n_way": 20,
             "k_shot": 5,
-            "n_query": 5
+            "n_query": 5,
+            "novel_index": [1, 2, 3, 4, 5]
         },
         "transform": {
             "horizontal_flip": 0.1,
