@@ -108,7 +108,7 @@ class RelationnetTrainer:
             metric = acc if self.config['metric'] == 'accuracy' else loss
             self.__save_checkpoint(episode + 1, metric)
 
-            if (episode + 1) % self.config['eval_freq'] == 0:
+            if (episode + 1) % self.config['eval_step'] == 0:
                 self.eval(episode+1)
 
         ave_loss = total_loss / len(self.train_dataset)
