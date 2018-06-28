@@ -55,7 +55,8 @@ class Cifar100(object):
                 self.train_image[int(label[-2:])] = image
                 self.novel_label.append(int(label[-2:]))
 
-            print("Novel labels:", self.novel_label, "index:")
+            print("Novel labels:", self.novel_label)
+            print("Novel index:", self.config['train']['sample']['novel_index'])
             # test
             test = self.config['test_dir']
             self.test_set = read_image(test)
