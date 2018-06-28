@@ -1,7 +1,6 @@
 from datasets.dataset import Cifar100
 from model.relationnet import Relationnet
 from utils import mkdir
-from torch.utils.data import DataLoader
 from torch.nn import MSELoss
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -25,6 +24,8 @@ class RelationnetTrainer:
         self.loss_list, self.acc_list = [], []
         self.min_loss = float('inf')
         self.max_acc = 0
+        mkdir(os.path.join('saved', self.config['save']['dir']))
+        mkdir(os.path.join("checkpoints", self.config['save']['dir']))
 
     def __load(self):
         # train
@@ -124,8 +125,9 @@ class RelationnetTrainer:
             results = torch.cat(results, dim=0).data.cpu().numpy().tolist()
             results = [label[idx] for idx in results]
 
-        mkdir('saved')
-        filename = os.path.join('saved', 'test.csv' if episode == None else 'test_episode{}.csv'.format(episode))
+        filename = os.path.join('saved',
+                                self.config['save']['dir'],
+                                'test.csv' if episode is None else 'test_episode{}.csv'.format(episode))
         with open(filename, 'w') as f:
             s = csv.writer(f, delimiter=',', lineterminator='\n')
             s.writerow(["image_id", "predicted_label"])
@@ -144,9 +146,7 @@ class RelationnetTrainer:
         }
 
         filepath = os.path.join("checkpoints", self.config['save']['dir'])
-        if not os.path.exists(filepath):
-            os.makedirs(filepath)
-
+        
         with open(os.path.join(filepath, 'config.json'), 'w') as f:
             json.dump(self.config, f, indent=4, sort_keys=False)
 
