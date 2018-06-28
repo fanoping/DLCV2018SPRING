@@ -27,6 +27,9 @@ class RelationnetTrainer:
         mkdir(os.path.join('saved', self.config['save']['dir']))
         mkdir(os.path.join("checkpoints", self.config['save']['dir']))
 
+        with open(os.path.join("checkpoints", self.config['save']['dir'], 'config.json'), 'w') as f:
+            json.dump(self.config, f, indent=4, sort_keys=False)
+
     def __load(self):
         # train
         self.train_dataset = Cifar100(config=self.config,
@@ -146,9 +149,6 @@ class RelationnetTrainer:
         }
 
         filepath = os.path.join("checkpoints", self.config['save']['dir'])
-        
-        with open(os.path.join(filepath, 'config.json'), 'w') as f:
-            json.dump(self.config, f, indent=4, sort_keys=False)
 
         filename = os.path.join(filepath, "episode{}_checkpoint.pth.tar".format(episode))
         if episode % self.config['save']['save_freq'] == 0:
