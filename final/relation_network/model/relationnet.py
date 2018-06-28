@@ -7,9 +7,10 @@ class Relationnet(nn.Module):
     def __init__(self, config):
         super(Relationnet, self).__init__()
         self.config = config
-        self.embedder = Embedder(config['model']['feature_size'], config['model']['hidden_size'])
+        self.embedder = Embedder(config['model']['feature_size'],
+                                 config['model']['embedder']['hidden_size'])
         self.relation = Relation(config['model']['feature_size'],
-                                 config['model']['hidden_size'],
+                                 config['model']['relation']['hidden_size'],
                                  config['model']['relation_dim'])
 
     def forward(self, samples, query):

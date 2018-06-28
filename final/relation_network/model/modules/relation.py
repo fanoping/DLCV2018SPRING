@@ -6,21 +6,23 @@ import math
 class Relation(nn.Module):
     def __init__(self, feature_size, hidden_size, relation_dim):
         super(Relation, self).__init__()
+        assert(len(hidden_size) == 2)
         self.conv1 = nn.Sequential(
-            nn.Conv2d(feature_size*2, hidden_size, kernel_size=3, padding=1),
-            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
+            nn.Conv2d(feature_size*2, hidden_size[0], kernel_size=3, padding=1),
+            nn.BatchNorm2d(hidden_size[0], momentum=1, affine=True),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(hidden_size, hidden_size, kernel_size=3, padding=1),
-            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
+            nn.Conv2d(hidden_size[0], hidden_size[1], kernel_size=3, padding=1),
+            nn.BatchNorm2d(hidden_size[1], momentum=1, affine=True),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
         self.fc = nn.Sequential(
-            nn.Linear(hidden_size, relation_dim),
+            nn.Linear(hidden_size[1], relation_dim),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=0.5),
             nn.Linear(relation_dim, 1),
             nn.Sigmoid()
         )

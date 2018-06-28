@@ -13,11 +13,21 @@
             "k_shot": 5,
             "n_query": 5
         },
+        "transform": {
+            "horizontal_flip": 0.1,
+            "vertical_flip": 0.1,
+            "rotate_degree": 15
+        },
         "episode": 500000
     },
     "model": {
-        "hidden_size": 64,
+        "embedder": {
+            "hidden_size": [64, 64, 64]
+        },
         "feature_size": 64,
+        "relation": {
+            "hidden_size": [64, 64]
+        },
         "relation_dim": 8
     },
     "optimizer": {

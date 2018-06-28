@@ -6,27 +6,28 @@ import math
 class Embedder(nn.Module):
     def __init__(self, feature_size, hidden_size):
         super(Embedder, self).__init__()
+        assert(len(hidden_size) == 3)
         self.conv1 = nn.Sequential(
-            nn.Conv2d(3, hidden_size, kernel_size=3, padding=0),
-            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
-            nn.ReLU(),
+            nn.Conv2d(3, hidden_size[0], kernel_size=3, padding=0),
+            nn.BatchNorm2d(hidden_size[0], momentum=1, affine=True),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(hidden_size, hidden_size, kernel_size=3, padding=0),
-            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
-            nn.ReLU(),
+            nn.Conv2d(hidden_size[0], hidden_size[1], kernel_size=3, padding=0),
+            nn.BatchNorm2d(hidden_size[1], momentum=1, affine=True),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
         self.conv3 = nn.Sequential(
-            nn.Conv2d(hidden_size, hidden_size, kernel_size=3, padding=1),
-            nn.BatchNorm2d(hidden_size, momentum=1, affine=True),
-            nn.ReLU()
+            nn.Conv2d(hidden_size[1], hidden_size[2], kernel_size=3, padding=1),
+            nn.BatchNorm2d(hidden_size[2], momentum=1, affine=True),
+            nn.ReLU(inplace=True)
         )
         self.conv4 = nn.Sequential(
-            nn.Conv2d(hidden_size, feature_size, kernel_size=3, padding=1),
+            nn.Conv2d(hidden_size[2], feature_size, kernel_size=3, padding=1),
             nn.BatchNorm2d(feature_size, momentum=1, affine=True),
-            nn.ReLU()
+            nn.ReLU(inplace=True)
         )
 
         for m in self.modules():

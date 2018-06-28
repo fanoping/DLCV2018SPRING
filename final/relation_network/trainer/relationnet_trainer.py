@@ -35,6 +35,10 @@ class RelationnetTrainer:
         self.train_dataset = Cifar100(config=self.config,
                                       mode='train',
                                       transform=transforms.Compose([
+                                          transforms.ToPILImage(),
+                                          transforms.RandomHorizontalFlip(self.config['train']['transform']['horizontal_flip']),
+                                          transforms.RandomVerticalFlip(self.config['train']['transform']['vertical_flip']),
+                                          transforms.RandomRotation(degrees=self.config['train']['transform']['rotate_degree']),
                                           transforms.ToTensor()
                                       ]))
         # test
