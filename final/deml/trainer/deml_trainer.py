@@ -1,7 +1,7 @@
 from datasets.dataset import Cifar100
-from model.relationnet import Relationnet
+from model.deml import DEML
 from utils import mkdir
-from torch.nn import MSELoss
+from torch.nn import CrossEntropyLoss
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
@@ -13,10 +13,10 @@ import sys
 import os
 
 
-class RelationnetTrainer:
+class DEMLTrainer:
     def __init__(self, config):
         self.config = config
-        self.with_cuda = config['cuda']
+        self.device = torch.device("cuda" if config['cuda'] else "cpu")
 
         self.__load()
         self.__build_model()
@@ -32,18 +32,22 @@ class RelationnetTrainer:
         self.train_dataset = Cifar100(config=self.config,
                                       mode='train',
                                       transform=transforms.Compose([
+                                          transforms.ToPILImage(),
+                                          transforms.Resize(224),
                                           transforms.ToTensor()
                                       ]))
         # test
         self.test_dataset = Cifar100(config=self.config,
                                      mode='eval',
                                      transform=transforms.Compose([
+                                         transforms.ToPILImage(),
+                                         transforms.Resize(224),
                                          transforms.ToTensor()
                                      ]))
 
     def __build_model(self):
-        self.model = Relationnet(self.config).cuda() if self.with_cuda else Relationnet(self.config)
-        self.criterion = MSELoss().cuda() if self.with_cuda else MSELoss()
+        self.model = DEML(self.config).to(self.device)
+        self.criterion = CrossEntropyLoss().to(self.device)
         self.optimizer = Adam(self.model.parameters(), lr=self.config['optimizer']['lr'])
         self.scheduler = StepLR(optimizer=self.optimizer,
                                 gamma=self.config['optimizer']['scheduler']['gamma'],
@@ -54,9 +58,8 @@ class RelationnetTrainer:
         for episode, (support_image, query_image, label) in enumerate(self.train_dataset):
             self.model.train()
             self.scheduler.step(epoch=episode)
-            support_image = Variable(support_image).cuda() if self.with_cuda else Variable(support_image)
-            query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
-            label = Variable(label)
+            support_image = support_image.to(self.device)
+            query_image = query_image.to(self.device)
 
             self.model.zero_grad()
             output = self.model(support_image, query_image)
@@ -146,7 +149,7 @@ class RelationnetTrainer:
         }
 
         filepath = os.path.join("checkpoints", self.config['save']['dir'])
-        
+
         with open(os.path.join(filepath, 'config.json'), 'w') as f:
             json.dump(self.config, f, indent=4, sort_keys=False)
 

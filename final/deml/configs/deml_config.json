@@ -1,10 +1,10 @@
 {
-    "structure": "Relationnet",
+    "structure": "DeepMetaLearning",
     "base_dir": "datasets/task2-dataset/base",
     "novel_dir": "datasets/task2-dataset/novel",
     "test_dir": "datasets/test",
     "save": {
-        "dir": "relation_5_shot-v01",
+        "dir": "deml_5_shot-v01",
         "save_freq": 1000
     },
     "train": {
