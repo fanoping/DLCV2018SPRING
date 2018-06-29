@@ -209,7 +209,8 @@ class RelationnetTrainer:
                                                                                 self.max_acc,
                                                                                 metric))
                 self.max_acc = metric
-                self.__eval(episode)
+                if self.config['eval']:
+                    self.__eval(episode)
         else:
             if self.min_loss > metric:
                 torch.save(state, f=best_filename)
@@ -218,4 +219,5 @@ class RelationnetTrainer:
                                                                                 self.min_loss,
                                                                                 metric))
                 self.min_loss = metric
-                self.__eval(episode)
+                if self.config['eval']:
+                    self.__eval(episode)

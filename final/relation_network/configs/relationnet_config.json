@@ -14,8 +14,8 @@
             "n_query": 5
         },
         "transform": {
-            "horizontal_flip": 0.1,
-            "vertical_flip": 0.1,
+            "horizontal_flip": 0.5,
+            "vertical_flip": 0.5,
             "rotate_degree": 15
         },
         "episode": 500000
@@ -28,7 +28,6 @@
             "novel_index": [1, 2, 3, 4, 5]
         }
     },
-
     "model": {
         "embedder": {
             "hidden_size": [64, 64, 64]
@@ -42,12 +41,12 @@
     "optimizer": {
         "lr": 0.001,
         "scheduler": {
-            "gamma": 0.99,
-            "step_size": 1000
+            "gamma": 0.5,
+            "step_size": 100000
         }
     },
     "log_step": 100,
-    "eval_step": 1000,
+    "eval": true,
     "verbose": 1,
     "metric": "val_acc",
     "cuda": true
