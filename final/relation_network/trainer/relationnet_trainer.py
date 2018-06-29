@@ -63,8 +63,6 @@ class RelationnetTrainer:
                                 step_size=self.config['optimizer']['scheduler']['step_size'])
 
     def train(self):
-        assert (self.config['metric'] in ['acc', 'loss', 'val_loss', 'val_acc'])
-
         total_loss, total_acc = 0, 0
         for episode, (support_image, query_image, label) in enumerate(self.train_dataset):
             self.model.train()

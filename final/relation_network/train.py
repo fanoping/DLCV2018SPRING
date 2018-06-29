@@ -5,6 +5,7 @@ import json
 
 def main(args):
     config = json.load(open(args.config))
+    assert (config['metric'] in ['acc', 'loss', 'val_loss', 'val_acc'])
     trainer = eval(config['structure'].title()+'Trainer')(config)
     trainer.train()
 
