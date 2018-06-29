@@ -36,9 +36,15 @@ class RelationnetTrainer:
                                       mode='train',
                                       transform=transforms.Compose([
                                           transforms.ToPILImage(),
-                                          transforms.RandomHorizontalFlip(self.config['train']['transform']['horizontal_flip']),
-                                          transforms.RandomVerticalFlip(self.config['train']['transform']['vertical_flip']),
+                                          transforms.RandomHorizontalFlip(p=self.config['train']['transform']['horizontal_flip']),
+                                          transforms.RandomVerticalFlip(p=self.config['train']['transform']['vertical_flip']),
                                           transforms.RandomRotation(degrees=self.config['train']['transform']['rotate_degree']),
+                                          transforms.ToTensor()
+                                      ]))
+        # valid
+        self.valid_dataset = Cifar100(config=self.config,
+                                      mode='valid',
+                                      transform=transforms.Compose([
                                           transforms.ToTensor()
                                       ]))
         # test
@@ -57,6 +63,8 @@ class RelationnetTrainer:
                                 step_size=self.config['optimizer']['scheduler']['step_size'])
 
     def train(self):
+        assert (self.config['metric'] in ['acc', 'loss', 'val_loss', 'val_acc'])
+
         total_loss, total_acc = 0, 0
         for episode, (support_image, query_image, label) in enumerate(self.train_dataset):
             self.model.train()
@@ -89,7 +97,16 @@ class RelationnetTrainer:
                 100.0 * (episode + 1) / len(self.train_dataset),
                 loss.data.item(),
                 acc
-            ), end='\r')
+            ), end=' ')
+
+            val_loss, val_acc = self.__valid()
+            metric = {'acc': acc, 'loss': loss, 'val_loss': val_loss, 'val_acc': val_acc}
+
+            if self.config['verbose']:
+                print('val_loss: {:.6f} val_acc: {:.3f}'.format(val_loss, val_acc), end='\r')
+            else:
+                print(end='\r')
+
             sys.stdout.write('\033[K')
 
             if (episode + 1) % self.config['log_step'] == 0:
@@ -104,17 +121,44 @@ class RelationnetTrainer:
             self.loss_list.append(loss)
             self.acc_list.append(acc)
 
-            assert (self.config['metric'] == 'accuracy' or self.config['metric'] == 'loss')
-            metric = acc if self.config['metric'] == 'accuracy' else loss
-            self.__save_checkpoint(episode + 1, metric)
+            self.__save_checkpoint(episode + 1, metric[self.config['metric']])
 
-            if (episode + 1) % self.config['eval_step'] == 0:
-                self.eval(episode+1)
+            # if (episode + 1) % self.config['eval_step'] == 0:
+            #     self.eval(episode+1)
 
         ave_loss = total_loss / len(self.train_dataset)
         ave_acc = total_acc / len(self.train_dataset)
 
-        print("Loss: {:.6f} Acc: {:.4f}".format(ave_loss, ave_acc))
+        print("loss: {:.6f} acc: {:.4f}".format(ave_loss, ave_acc))
+
+    def __valid(self):
+        with torch.no_grad():
+            self.model.eval()
+            total_loss, total_acc = 0, 0
+            for valid_episode, (support_image, query_image, label) in enumerate(self.valid_dataset):
+                support_image = Variable(support_image).cuda() if self.with_cuda else Variable(support_image)
+                query_image = Variable(query_image).cuda() if self.with_cuda else Variable(query_image)
+                label = Variable(label)
+
+                output = self.model(support_image, query_image)
+                one_hot_labels = torch.zeros(
+                    self.config['train']['sample']['n_query'] * self.config['train']['sample']['n_way'],
+                    self.config['train']['sample']['n_way']
+                )
+                one_hot_labels = one_hot_labels.scatter_(1, label.view(-1, 1), 1)
+                one_hot_labels = one_hot_labels.cuda() if self.with_cuda else one_hot_labels
+
+                loss = self.criterion(output, one_hot_labels)
+                _, result = torch.max(output, dim=1)
+                acc = torch.eq(result.cpu(), label).float().mean()
+
+                total_loss += loss.data.item()
+                total_acc += acc
+
+            ave_loss = total_loss / len(self.valid_dataset)
+            ave_acc = total_acc / len(self.valid_dataset)
+
+            return ave_loss, ave_acc
 
     def eval(self, episode=None):
         print("Evaluation...")
@@ -134,7 +178,7 @@ class RelationnetTrainer:
 
         filename = os.path.join('saved',
                                 self.config['save']['dir'],
-                                'test.csv' if episode is None else 'test_episode{}.csv'.format(episode))
+                                'test_final.csv' if episode is None else 'test_episode{}.csv'.format(episode))
         with open(filename, 'w') as f:
             s = csv.writer(f, delimiter=',', lineterminator='\n')
             s.writerow(["image_id", "predicted_label"])
@@ -149,7 +193,7 @@ class RelationnetTrainer:
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'loss': self.loss_list,
-            'accuracy': self.acc_list,
+            'accuracy': self.acc_list
         }
 
         filepath = os.path.join("checkpoints", self.config['save']['dir'])
@@ -159,13 +203,19 @@ class RelationnetTrainer:
             torch.save(state, f=filename)
 
         best_filename = os.path.join(filepath, "best_checkpoint.pth.tar")
-        if self.config['metric'] == 'accuracy':
+        if self.config['metric'] in ['acc', 'val_acc']:
             if self.max_acc < metric:
                 torch.save(state, f=best_filename)
-                print("Saving Episode: {}, Updating acc {:.4f} to {:.4f}".format(episode, self.max_acc, metric))
+                print("Saving Episode: {}, Updating {} {:.4f} to {:.4f}".format(episode,
+                                                                                self.config['metric'],
+                                                                                self.max_acc,
+                                                                                metric))
                 self.max_acc = metric
         else:
             if self.min_loss > metric:
                 torch.save(state, f=best_filename)
-                print("Saving Episode: {}, Updating loss {:.6f} to {:.6f}".format(episode, self.min_loss, metric))
+                print("Saving Episode: {}, Updating {} {:.6f} to {:.6f}".format(episode,
+                                                                                self.config['metric'],
+                                                                                self.min_loss,
+                                                                                metric))
                 self.min_loss = metric
