@@ -67,7 +67,7 @@
    
       * **Usage**
         
-        `cd task2` first, check configuration in `config/relationnet_config.json` before training
+        `cd relation_network` first, check configuration in `config/relationnet_config.json` before training
         
         * Training
             ```
