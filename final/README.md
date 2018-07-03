@@ -6,7 +6,7 @@
   * Task 1: Small Data Supervised Learning
     * Train classifier using a limited version of Fashion MNIST dataset 
     * Apply transfer learning
-  * Task 2: One-shot / Few-shot Learning
+  * Task 2: One-shot / Few-shot Learning (Not done, performance not good)
     * Design model to recognize a number of novel classes with insufficient number of training images
 
 ## Requirements
@@ -29,39 +29,37 @@
 ## Implementation
    * **Small Data Supervised Learning**
   
-      * **Usage**
-            
-        * Training
-            
-        * Visualize / Inference
+      First, get into the root file for task 1, `cd task1`
+      
+      Put the file `Fashion_MNIST_student` into the directory `datasets` as shown
+      
+      * For training, please check the argument listed in `train.py`
+        
+        ```
+            python3 train.py --train-dir datasets/Fashion_MNIST_student/train
+                             --test-dir datasets/Fashion_MNIST_student/test
+                             --batch-size 128
+                             --epochs 100
+                             --save-freq 1
+        ```       
+           
+      * For testing, please check the argument listed in `inference.py`
+      
+        ```
+            python3 train.py --train-dir datasets/Fashion_MNIST_student/train
+                             --test-dir datasets/Fashion_MNIST_student/test
+                             --checkpoint checkpoints/fashion_mnist/best_checkpoint.pth.tar
+        ``` 
+      
+      * For Kaggle results, execute the script `task1.sh` for download model and inference the result
+        
+        ```
+            bash task1.sh
+        ```
+        
+        After execution, there will be a file called `result.csv`
         
    * **One-shot / Few-shot Learning**
-      
-      Alternative implementation of **Prototypical Networks for Few Shot Learning** in PyTorch 0.4.0
-      
-      Reference: **Prototypical Networks for Few-shot Learning**, Snell et al., NIPS'17 ([paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf), [code](https://github.com/jakesnell/prototypical-networks))
-      
-      * **Usage**
-        
-        `cd task2` first, check configuration in `config/protonet_config.json` before training
-        
-        * Training
-            ```
-                python3 train.py --config config/protonet_config.json
-            ```
-            
-        * Visualize / Inference
-
-      * **Citation**
-        
-        ```
-            @inproceedings{snell2017prototypical,
-              title={Prototypical Networks for Few-shot Learning},
-              author={Snell, Jake and Swersky, Kevin and Zemel, Richard},
-              booktitle={Advances in Neural Information Processing Systems},
-              year={2017}
-             }
-        ```
       
       Alternative implementation of **Learning to Compare: Relation Network for Few-Shot Learning** in PyTorch 0.4.0
       
@@ -75,8 +73,6 @@
             ```
                 python3 train.py --config config/relationnet_config.json
             ```
-            
-        * Visualize / Inference
 
       * **Citation**
         
