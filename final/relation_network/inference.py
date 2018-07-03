@@ -41,11 +41,14 @@ def main(args):
     filename = os.path.join('saved',
                             config['save']['dir'],
                             'inference.csv')
-    with open(filename, 'w') as f:
+    with open('inference.csv', 'w') as f:
         s = csv.writer(f, delimiter=',', lineterminator='\n')
         s.writerow(["image_id", "predicted_label"])
         for idx, predict_label in enumerate(results):
-            s.writerow([idx, predict_label])
+            if predict_label == 0:
+                s.writerow([idx, '00'])
+            else:
+                s.writerow([idx, predict_label])
     print("Saving inference label csv as {}".format(filename))
     print("Inference done!")
 
